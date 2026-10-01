@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/constants.dart';
 
 class NavigationScreen extends StatefulWidget {
   const NavigationScreen({super.key});
@@ -10,35 +11,74 @@ class NavigationScreen extends StatefulWidget {
 class _NavigationScreenState extends State<NavigationScreen> {
   final TextEditingController searchController = TextEditingController();
 
-  final List<Map<String, dynamic>> destinations = [
-    {
-      'name': 'Central Library',
-      'category': 'Academic',
-      'icon': Icons.local_library_outlined,
-    },
-    {
-      'name': 'Main Canteen',
-      'category': 'Food',
-      'icon': Icons.restaurant_outlined,
-    },
-    {
-      'name': 'Academic Block',
-      'category': 'Academic',
-      'icon': Icons.school_outlined,
-    },
-    {
-      'name': 'Main Hostel',
-      'category': 'Hostel',
-      'icon': Icons.home_outlined,
-    },
-    {
-      'name': 'Sports Complex',
-      'category': 'Sports',
-      'icon': Icons.sports_soccer_outlined,
-    },
-  ];
+  List<Map<String, dynamic>> get destinations {
+  return campusLocations.map((location) {
+    return {
+        'name': location.name,
+        'category': location.category,
+        'icon': _getIcon(location.category),
+      };
+    }).toList();
+  }
 
   List<Map<String, dynamic>> filteredDestinations = [];
+
+  IconData _getIcon(String category) {
+    switch (category) {
+      case 'Academic Block':
+        return Icons.school_outlined;
+
+      case 'Canteen':
+        return Icons.restaurant_outlined;
+
+      case 'Cafe':
+        return Icons.local_cafe_outlined;
+
+      case 'Library':
+        return Icons.local_library_outlined;
+
+      case 'Sports Ground':
+        return Icons.sports_soccer_outlined;
+
+      case 'Store':
+        return Icons.store_outlined;
+
+      case 'Medical Facility':
+        return Icons.local_hospital_outlined;
+
+      case 'Hall':
+        return Icons.meeting_room_outlined;
+
+      case 'Girls Hostel':
+      case 'Boys Hostel':
+      case 'Staff Quarters':
+        return Icons.home_outlined;
+
+      case 'Park':
+        return Icons.park_outlined;
+
+      case 'Bank':
+        return Icons.account_balance_outlined;
+
+      case 'ATM':
+        return Icons.atm_outlined;
+
+      case 'Laboratory':
+        return Icons.science_outlined;
+
+      case 'Guest House':
+        return Icons.hotel_outlined;
+
+      case 'Administrative Block':
+        return Icons.business_outlined;
+
+      case 'Sports Facility':
+        return Icons.pool_outlined;
+
+      default:
+        return Icons.location_on_outlined;
+    }
+  }
 
   @override
   void initState() {
@@ -109,7 +149,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.15),
                       blurRadius: 10,
                       offset: const Offset(0, 3),
                     ),
