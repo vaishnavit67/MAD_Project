@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'signup_screen.dart';
+import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -225,8 +226,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 height: 54,
                 child: ElevatedButton(
                   onPressed: () {
-                    // Authentication will be added later.
-                    // For now this is only frontend.
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const HomeScreen(),
+                      ),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF155EEF),
