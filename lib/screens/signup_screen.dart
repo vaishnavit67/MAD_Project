@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'login_screen.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -11,6 +14,139 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+
+  // Text controllers
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _rollNumberController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _rollNumberController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _signUp() async {
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final rollNumber = _rollNumberController.text.trim();
+    final password = _passwordController.text;
+    final confirmPassword = _confirmPasswordController.text;
+
+    // Check empty fields
+    if (name.isEmpty ||
+        email.isEmpty ||
+        rollNumber.isEmpty ||
+        password.isEmpty ||
+        confirmPassword.isEmpty) {
+      _showMessage('Please fill in all fields.');
+      return;
+    }
+
+    // Check password match
+    if (password != confirmPassword) {
+      _showMessage('Passwords do not match.');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // 1. Create Firebase Authentication account
+      final UserCredential userCredential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // 2. Get the newly created user's UID
+      final User? user = userCredential.user;
+
+      if (user == null) {
+        _showMessage('Unable to create user account.');
+        return;
+      }
+
+      // 3. Save user profile in Firestore
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .set({
+        'uid': user.uid,
+        'name': name,
+        'email': email,
+        'rollNumber': rollNumber,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      if (!mounted) return;
+
+      _showMessage('Account created successfully!');
+
+      // 4. Go back to Login
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const LoginScreen(),
+        ),
+      );
+    } on FirebaseAuthException catch (e) {
+      String message;
+
+      switch (e.code) {
+        case 'email-already-in-use':
+          message = 'An account already exists with this email.';
+          break;
+
+        case 'invalid-email':
+          message = 'Please enter a valid email address.';
+          break;
+
+        case 'weak-password':
+          message = 'Password is too weak. Use a stronger password.';
+          break;
+
+        case 'operation-not-allowed':
+          message = 'Email/password authentication is not enabled.';
+          break;
+
+        default:
+          message = e.message ?? 'Unable to create account.';
+      }
+
+      _showMessage(message);
+    } on FirebaseException catch (e) {
+      _showMessage(
+        'Account created, but profile could not be saved: ${e.message}',
+      );
+    } catch (e) {
+      _showMessage('Something went wrong. Please try again.');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -105,6 +241,7 @@ class _SignupScreenState extends State<SignupScreen> {
               const SizedBox(height: 8),
 
               TextField(
+                controller: _nameController,
                 decoration: _inputDecoration(
                   hint: 'Enter your full name',
                   icon: Icons.person_outline_rounded,
@@ -129,6 +266,7 @@ class _SignupScreenState extends State<SignupScreen> {
               const SizedBox(height: 8),
 
               TextField(
+                controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 decoration: _inputDecoration(
                   hint: 'Enter your email address',
@@ -154,6 +292,7 @@ class _SignupScreenState extends State<SignupScreen> {
               const SizedBox(height: 8),
 
               TextField(
+                controller: _rollNumberController,
                 decoration: _inputDecoration(
                   hint: 'Enter your roll number',
                   icon: Icons.badge_outlined,
@@ -178,6 +317,7 @@ class _SignupScreenState extends State<SignupScreen> {
               const SizedBox(height: 8),
 
               TextField(
+                controller: _passwordController,
                 obscureText: _obscurePassword,
                 decoration: _inputDecoration(
                   hint: 'Create a password',
@@ -215,6 +355,7 @@ class _SignupScreenState extends State<SignupScreen> {
               const SizedBox(height: 8),
 
               TextField(
+                controller: _confirmPasswordController,
                 obscureText: _obscureConfirmPassword,
                 decoration: _inputDecoration(
                   hint: 'Confirm your password',
@@ -245,9 +386,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 width: double.infinity,
                 height: 54,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // Real registration will be added later.
-                  },
+                  onPressed: _isLoading ? null : _signUp,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF155EEF),
                     foregroundColor: Colors.white,
@@ -256,13 +395,22 @@ class _SignupScreenState extends State<SignupScreen> {
                       borderRadius: BorderRadius.circular(15),
                     ),
                   ),
-                  child: const Text(
-                    'Sign Up',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text(
+                          'Sign Up',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                 ),
               ),
 
@@ -310,7 +458,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 height: 52,
                 child: OutlinedButton.icon(
                   onPressed: () {
-                    // Google authentication later
+                    // Google authentication will be implemented next.
                   },
                   icon: const Icon(
                     Icons.g_mobiledata_rounded,
@@ -392,21 +540,18 @@ class _SignupScreenState extends State<SignupScreen> {
       suffixIcon: suffix,
       filled: true,
       fillColor: Colors.white,
-
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: const BorderSide(
           color: Color(0xFFE4E7EC),
         ),
       ),
-
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: const BorderSide(
           color: Color(0xFFE4E7EC),
         ),
       ),
-
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: const BorderSide(
