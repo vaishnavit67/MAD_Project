@@ -22,10 +22,7 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(seconds: 2),
     );
 
-    animation = Tween<double>(
-      begin: -1,
-      end: 1,
-    ).animate(
+    animation = Tween<double>(begin: -1, end: 1).animate(
       CurvedAnimation(
         parent: controller,
         curve: Curves.easeInOut,
@@ -61,7 +58,6 @@ class _SplashScreenState extends State<SplashScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-
               // Logo
               Container(
                 width: 90,
@@ -79,7 +75,7 @@ class _SplashScreenState extends State<SplashScreen>
 
               const SizedBox(height: 25),
 
-              // App name
+              // App Title
               const Text(
                 'CAMPUS',
                 style: TextStyle(
@@ -111,7 +107,7 @@ class _SplashScreenState extends State<SplashScreen>
 
               const SizedBox(height: 55),
 
-              // Moving light
+              // Moving Light Indicator
               SizedBox(
                 width: 260,
                 height: 20,
@@ -120,8 +116,6 @@ class _SplashScreenState extends State<SplashScreen>
                   builder: (context, child) {
                     return Stack(
                       children: [
-
-                        // Line
                         Positioned(
                           left: 15,
                           right: 15,
@@ -131,13 +125,8 @@ class _SplashScreenState extends State<SplashScreen>
                             color: Colors.white30,
                           ),
                         ),
-
-                        // Moving light
                         Align(
-                          alignment: Alignment(
-                            animation.value,
-                            0,
-                          ),
+                          alignment: Alignment(animation.value, 0),
                           child: Container(
                             width: 12,
                             height: 12,

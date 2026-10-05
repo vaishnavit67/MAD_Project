@@ -10,7 +10,6 @@ class OnboardingScreen extends StatefulWidget {
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
-
   int _currentPage = 0;
 
   final List<OnboardingData> pages = [
@@ -23,13 +22,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     OnboardingData(
       title: 'Connect.',
       description:
-          'Stay connected with clubs, events, friends and your campus community.',
+          'Stay connected with campus locations, blocks, facilities, and academic hubs.',
       icon: Icons.people_alt_rounded,
     ),
     OnboardingData(
       title: 'Achieve.',
       description:
-          'Find your way, stay informed and make the most of your campus life.',
+          'Find your way easily, navigate routes, and make the most of your campus life.',
       icon: Icons.school_rounded,
     ),
   ];
@@ -67,11 +66,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       body: SafeArea(
         child: Column(
           children: [
-
-            // -------------------------
-            // TOP BRANDING
-            // -------------------------
-
+            // Top Branding Bar
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
               child: Row(
@@ -89,9 +84,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       size: 22,
                     ),
                   ),
-
                   const SizedBox(width: 10),
-
                   const Text(
                     'Campus Connect',
                     style: TextStyle(
@@ -100,9 +93,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       color: Color(0xFF101828),
                     ),
                   ),
-
                   const Spacer(),
-
                   TextButton(
                     onPressed: _goToLogin,
                     child: const Text(
@@ -117,10 +108,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
 
-            // -------------------------
-            // PAGE VIEW
-            // -------------------------
-
+            // Page View Slider
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
@@ -138,18 +126,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-
-                        // Illustration
+                        // Circle Icon Illustration
                         Container(
-                          width: 250,
-                          height: 250,
+                          width: 230,
+                          height: 230,
                           decoration: BoxDecoration(
                             color: const Color(0xFFEAF2FF),
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF155EEF)
-                                    .withValues(alpha: 0.08),
+                                color: const Color(0xFF155EEF).withValues(alpha: 0.08),
                                 blurRadius: 30,
                                 spreadRadius: 5,
                               ),
@@ -158,33 +144,30 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           child: Stack(
                             alignment: Alignment.center,
                             children: [
-
                               Container(
-                                width: 175,
-                                height: 175,
+                                width: 160,
+                                height: 160,
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   shape: BoxShape.circle,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black
-                                          .withValues(alpha: 0.05),
+                                      color: Colors.black.withValues(alpha: 0.05),
                                       blurRadius: 20,
                                     ),
                                   ],
                                 ),
                               ),
-
                               Icon(
                                 page.icon,
-                                size: 82,
+                                size: 80,
                                 color: const Color(0xFF155EEF),
                               ),
                             ],
                           ),
                         ),
 
-                        const SizedBox(height: 45),
+                        const SizedBox(height: 40),
 
                         // Title
                         Text(
@@ -215,10 +198,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
 
-            // -------------------------
-            // PAGE INDICATORS
-            // -------------------------
-
+            // Indicator Dots
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
@@ -244,10 +224,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
             const SizedBox(height: 28),
 
-            // -------------------------
-            // NEXT BUTTON
-            // -------------------------
-
+            // Next / Get Started Button
             Padding(
               padding: const EdgeInsets.fromLTRB(28, 0, 28, 28),
               child: SizedBox(
@@ -264,9 +241,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     ),
                   ),
                   child: Text(
-                    _currentPage == pages.length - 1
-                        ? 'Get Started'
-                        : 'Next',
+                    _currentPage == pages.length - 1 ? 'Get Started' : 'Next',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
