@@ -7,6 +7,7 @@ import 'screens/signup_screen.dart';
 import 'screens/navigation_screen.dart';
 import 'screens/destination_screen.dart';
 import 'screens/map_screen.dart';
+import 'screens/history_screen.dart';
 import 'theme/app_theme.dart';
 
 void main() async {
@@ -41,6 +42,7 @@ class CampusConnectApp extends StatelessWidget {
         '/navigation': (context) => const NavigationScreen(),
         '/destination': (context) => const DestinationScreen(),
         '/map': (context) => const MapScreen(),
+        '/history': (context) => const HistoryScreen(),
       },
     );
   }
