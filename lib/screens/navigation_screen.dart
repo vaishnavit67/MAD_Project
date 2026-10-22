@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 import '../models/campus_location.dart';
 import '../services/location_service.dart';
 import '../services/history_service.dart';
@@ -32,9 +33,16 @@ class _NavigationScreenState extends State<NavigationScreen> {
     'Boys Hostel',
     'Girls Hostel',
     'Library',
-    'ATM',
+    'Sports Facility',
     'Laboratory',
-    'Hall',
+    'Landmark',
+    'Place of Worship',
+    'Auditorium',
+    'Administrative Block',
+    'ATM',
+    'Medical Facility',
+    'Store',
+    'Transit',
   ];
 
   @override
@@ -77,6 +85,53 @@ class _NavigationScreenState extends State<NavigationScreen> {
         category: selectedCategory,
       );
     });
+  }
+
+  LatLng _getOriginCoordinates() {
+    if (startLocation == 'My Current GPS Location') {
+      return const LatLng(amritaMainGateLat, amritaMainGateLng);
+    }
+    final match = allLocations.firstWhere(
+      (l) => l.name.toLowerCase() == startLocation.toLowerCase(),
+      orElse: () => CampusLocation(
+        name: startLocation,
+        category: 'Origin',
+        latitude: amritaMainGateLat,
+        longitude: amritaMainGateLng,
+      ),
+    );
+    return LatLng(match.latitude ?? amritaMainGateLat, match.longitude ?? amritaMainGateLng);
+  }
+
+  String _calculateDynamicDistance(CampusLocation loc) {
+    if (loc.latitude == null || loc.longitude == null) return loc.distance;
+    final startPt = _getOriginCoordinates();
+    final destPt = LatLng(loc.latitude!, loc.longitude!);
+    const distCalc = Distance();
+    final directMeters = distCalc.as(LengthUnit.Meter, startPt, destPt);
+
+    if (directMeters <= 10) return '0 m (Here)';
+
+    // Pedestrian path factor (~1.18x for campus road networks)
+    final pathMeters = (directMeters * 1.18).round();
+    if (pathMeters >= 1000) {
+      return '${(pathMeters / 1000).toStringAsFixed(2)} km';
+    }
+    return '$pathMeters m';
+  }
+
+  String _calculateDynamicWalkingTime(CampusLocation loc) {
+    if (loc.latitude == null || loc.longitude == null) return loc.walkingTime;
+    final startPt = _getOriginCoordinates();
+    final destPt = LatLng(loc.latitude!, loc.longitude!);
+    const distCalc = Distance();
+    final directMeters = distCalc.as(LengthUnit.Meter, startPt, destPt);
+
+    if (directMeters <= 10) return '~1 min';
+    final pathMeters = (directMeters * 1.18).round();
+    final minutes = (pathMeters / 72.0).ceil();
+    if (minutes <= 1) return '~1 min';
+    return '~$minutes min';
   }
 
   IconData _getCategoryIcon(String category) {
@@ -355,7 +410,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
                     return ListTile(
                       leading: Icon(_getCategoryIcon(loc.category), color: const Color(0xFF155EEF)),
                       title: Text(loc.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                      subtitle: Text('${loc.category} • ${loc.distance}'),
+                      subtitle: Text('${loc.category} • ${_calculateDynamicDistance(loc)} (${_calculateDynamicWalkingTime(loc)})'),
                       onTap: () {
                         setState(() => routeDestination = loc.name);
                         Navigator.pop(context);
@@ -865,20 +920,22 @@ class _NavigationScreenState extends State<NavigationScreen> {
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(color: const Color(0xFFE2E8F0)),
                 ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-                  leading: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: _getCategoryColor(item.category).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(10),
+                child: Material(
+                  color: Colors.transparent,
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: _getCategoryColor(item.category).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(_getCategoryIcon(item.category), color: _getCategoryColor(item.category), size: 20),
                     ),
-                    child: Icon(_getCategoryIcon(item.category), color: _getCategoryColor(item.category), size: 20),
-                  ),
-                  title: Text(item.locationName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                  subtitle: Text('${item.category} • ${item.distance} (${item.walkingTime})', style: const TextStyle(fontSize: 12)),
-                  trailing: const Icon(Icons.navigation_rounded, color: Color(0xFF155EEF), size: 20),
-                  onTap: () {
+                    title: Text(item.locationName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                    subtitle: Text('${item.category} • ${item.distance} (${item.walkingTime})', style: const TextStyle(fontSize: 12)),
+                    trailing: const Icon(Icons.navigation_rounded, color: Color(0xFF155EEF), size: 20),
+                    onTap: () {
                     Navigator.pushNamed(
                       context,
                       '/destination',
@@ -890,6 +947,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
                       },
                     );
                   },
+                  ),
                 ),
               );
             },
@@ -983,8 +1041,10 @@ class _NavigationScreenState extends State<NavigationScreen> {
           ),
         ],
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+      child: Material(
+        color: Colors.transparent,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
         onTap: () {
           HistoryService.instance.addFromLocation(
             location,
@@ -1016,7 +1076,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF0F172A)),
         ),
         subtitle: Text(
-          '${location.category} • ${location.distance} (${location.walkingTime})',
+          '${location.category} • ${_calculateDynamicDistance(location)} (${_calculateDynamicWalkingTime(location)})',
           style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
         ),
         trailing: IconButton(
@@ -1028,6 +1088,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
           onPressed: () => _toggleFavorite(location),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

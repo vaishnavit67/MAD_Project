@@ -1,0 +1,695 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-10-18T18:19:24Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "node",
+  "id": 988441542,
+  "lat": 10.8992656,
+  "lon": 76.9006082,
+  "tags": {
+    "name": "Main gate"
+  }
+},
+{
+  "type": "node",
+  "id": 1423798452,
+  "lat": 10.8984762,
+  "lon": 76.8959745,
+  "tags": {
+    "ele": "313",
+    "internet_access": "no",
+    "name": "Ettimadai",
+    "name:ml": "എട്ടിമട",
+    "network": "IR",
+    "note": "Ettimadai is a railway station in the Coimbatore suburb of Ettimadai, Tamil Nadu, India. It is located between Madukkarai and Walayar. Trains from Coimbatore Junction railway station and Podanur Junction railway station heading to Palakkad Junction railwa",
+    "operator": "SR",
+    "public_transport": "station",
+    "railway": "station",
+    "ref": "ETMD",
+    "train": "yes",
+    "wikidata": "Q31321428",
+    "wikipedia": "en:Ettimadai railway station"
+  }
+},
+{
+  "type": "node",
+  "id": 3840258870,
+  "lat": 10.9017465,
+  "lon": 76.9018217,
+  "tags": {
+    "name": "University Clinic"
+  }
+},
+{
+  "type": "node",
+  "id": 5155700011,
+  "lat": 10.9032978,
+  "lon": 76.8984261,
+  "tags": {
+    "artwork_type": "statue",
+    "name": "Natarajar statue",
+    "tourism": "artwork"
+  }
+},
+{
+  "type": "node",
+  "id": 5158426533,
+  "lat": 10.9021404,
+  "lon": 76.9011547,
+  "tags": {
+    "name": "Temple"
+  }
+},
+{
+  "type": "node",
+  "id": 5362027628,
+  "lat": 10.9047652,
+  "lon": 76.8987062,
+  "tags": {
+    "highway": "turning_circle",
+    "name": "Cyber Lab"
+  }
+},
+{
+  "type": "node",
+  "id": 10845289548,
+  "lat": 10.8999927,
+  "lon": 76.9028529,
+  "tags": {
+    "artwork_type": "statue",
+    "name": "Saraswati Statue",
+    "tourism": "artwork"
+  }
+},
+{
+  "type": "node",
+  "id": 10845300113,
+  "lat": 10.9038804,
+  "lon": 76.8998382,
+  "tags": {
+    "artwork_type": "statue",
+    "name": "Arjuna Statue",
+    "tourism": "artwork"
+  }
+},
+{
+  "type": "way",
+  "id": 85242110,
+  "center": {
+    "lat": 10.8913113,
+    "lon": 76.9033292
+  },
+  "tags": {
+    "description": "Amrita University Road",
+    "highway": "tertiary",
+    "name": "Ettimadai Railway Station Road",
+    "not:name": "Amrita University Road",
+    "oneway": "no"
+  }
+},
+{
+  "type": "way",
+  "id": 128964693,
+  "center": {
+    "lat": 10.9036046,
+    "lon": 76.8996960
+  },
+  "tags": {
+    "addr:city": "Ettimadai",
+    "addr:district": "Coimbatore",
+    "addr:postcode": "641112",
+    "addr:street": "Amrita Nagar",
+    "amenity": "university",
+    "description": "Amrita Vishwa Vidyapeetham is a multi-campus, multi-disiplinary private deemed research and teaching university based in Coimbatore, India. It currently has 9 campuses with 16 constituent schools across the India.",
+    "education": "university",
+    "email": "univhq@amrita.edu",
+    "image": "https://en.wikipedia.org/wiki/File:Amrita-vishwa-vidyapeetham-color-logo.png",
+    "internet_access": "yes",
+    "internet_access:fee": "no",
+    "name": "Amrita Vishwa Vidyapeetham",
+    "name:en": "Amrita Vishwa Vidyapeetham",
+    "name:hi": "अमृता विश्‍व विद्यापीठम्",
+    "name:kn": "ಅಮೃತ ವಿಶ್ವ ವಿದ್ಯಾಪೀಠಂ",
+    "name:ml": "അമൃത വിശ്വ വിദ്യാപീഠം",
+    "name:ta": "அமிர்தா விஸ்வ வித்யாபீடம்",
+    "name:te": "అమృత విశ్వ విద్యాపీఠం",
+    "not:name": "Amrita University",
+    "operator": "Mata Amritanandamayi math",
+    "website": "https://www.amrita.edu/campus/coimbatore",
+    "wheelchair": "yes",
+    "wikidata": "Q4748684",
+    "wikimedia_commons": "Category:Amrita Vishwa Vidyapeetham",
+    "wikipedia": "en:Amrita Vishwa Vidyapeetham"
+  }
+},
+{
+  "type": "way",
+  "id": 128964701,
+  "center": {
+    "lat": 10.8984723,
+    "lon": 76.9011297
+  },
+  "tags": {
+    "highway": "residential",
+    "name": "Amrita University main road"
+  }
+},
+{
+  "type": "way",
+  "id": 380702787,
+  "center": {
+    "lat": 10.9063381,
+    "lon": 76.8989158
+  },
+  "tags": {
+    "access": "permissive",
+    "leisure": "swimming_pool",
+    "name": "Amrita University Pool"
+  }
+},
+{
+  "type": "way",
+  "id": 380702789,
+  "center": {
+    "lat": 10.9043052,
+    "lon": 76.8986192
+  },
+  "tags": {
+    "building": "university",
+    "layer": "-1",
+    "name": "Academic Block 2"
+  }
+},
+{
+  "type": "way",
+  "id": 380702790,
+  "center": {
+    "lat": 10.9043796,
+    "lon": 76.8990966
+  },
+  "tags": {
+    "amenity": "library",
+    "building": "yes",
+    "name": "Central Library",
+    "operator": "Amrita Vishwa Vidyapeetham University"
+  }
+},
+{
+  "type": "way",
+  "id": 380702791,
+  "center": {
+    "lat": 10.9030199,
+    "lon": 76.8997953
+  },
+  "tags": {
+    "building": "yes",
+    "name": "Gargi Bhavanam",
+    "tourism": "hostel"
+  }
+},
+{
+  "type": "way",
+  "id": 380702807,
+  "center": {
+    "lat": 10.9007548,
+    "lon": 76.9012504
+  },
+  "tags": {
+    "building": "yes",
+    "name": "Maitheyi Bhavanam",
+    "tourism": "hostel"
+  }
+},
+{
+  "type": "way",
+  "id": 380702809,
+  "center": {
+    "lat": 10.9014041,
+    "lon": 76.9012679
+  },
+  "tags": {
+    "building": "university",
+    "name": "Central Kitchen"
+  }
+},
+{
+  "type": "way",
+  "id": 380829415,
+  "center": {
+    "lat": 10.9062324,
+    "lon": 76.8975240
+  },
+  "tags": {
+    "addr:city": "Ettimadai",
+    "addr:street": "AmritaNagar",
+    "building": "university",
+    "name": "Academic Block 3 - International school of Law"
+  }
+},
+{
+  "type": "way",
+  "id": 380829418,
+  "center": {
+    "lat": 10.9050471,
+    "lon": 76.8953273
+  },
+  "tags": {
+    "building": "university",
+    "name": "Fabrication workshop"
+  }
+},
+{
+  "type": "way",
+  "id": 380829419,
+  "center": {
+    "lat": 10.9038197,
+    "lon": 76.8957055
+  },
+  "tags": {
+    "building": "university",
+    "name": "Amrita Automative Research & Testing Centre"
+  }
+},
+{
+  "type": "way",
+  "id": 380829420,
+  "center": {
+    "lat": 10.9027979,
+    "lon": 76.8971646
+  },
+  "tags": {
+    "building": "yes",
+    "name": "Gauthama Bhavanam",
+    "tourism": "hostel"
+  }
+},
+{
+  "type": "way",
+  "id": 380829421,
+  "center": {
+    "lat": 10.9025214,
+    "lon": 76.8962124
+  },
+  "tags": {
+    "building": "yes",
+    "name": "Agasthya Bhavanam",
+    "tourism": "hostel"
+  }
+},
+{
+  "type": "way",
+  "id": 380829422,
+  "center": {
+    "lat": 10.9030560,
+    "lon": 76.8961990
+  },
+  "tags": {
+    "amenity": "fast_food",
+    "building": "university",
+    "fast_food": "cafeteria",
+    "name": "Agastya/Gautama Bhavanam Mess"
+  }
+},
+{
+  "type": "way",
+  "id": 380829425,
+  "center": {
+    "lat": 10.9016733,
+    "lon": 76.8960354
+  },
+  "tags": {
+    "building": "yes",
+    "name": "Vasishta Bhavanam",
+    "tourism": "hostel"
+  }
+},
+{
+  "type": "way",
+  "id": 380829426,
+  "center": {
+    "lat": 10.9015033,
+    "lon": 76.8948029
+  },
+  "tags": {
+    "building": "yes",
+    "leisure": "fitness_centre",
+    "name": "Aroyga Sadhanam - Boys Gym"
+  }
+},
+{
+  "type": "way",
+  "id": 380829427,
+  "center": {
+    "lat": 10.9014546,
+    "lon": 76.8988262
+  },
+  "tags": {
+    "building": "yes",
+    "name": "Amrita Guest House",
+    "operator": "Amrita Vishwa Vidyapeetham University",
+    "tourism": "guest_house"
+  }
+},
+{
+  "type": "way",
+  "id": 380829429,
+  "center": {
+    "lat": 10.9043820,
+    "lon": 76.9005465
+  },
+  "tags": {
+    "building": "university",
+    "name": "Hostel"
+  }
+},
+{
+  "type": "way",
+  "id": 380829757,
+  "center": {
+    "lat": 10.9054119,
+    "lon": 76.9018973
+  },
+  "tags": {
+    "building": "university",
+    "name": "Corporate and Industry Relations"
+  }
+},
+{
+  "type": "way",
+  "id": 380829758,
+  "center": {
+    "lat": 10.9044941,
+    "lon": 76.9025907
+  },
+  "tags": {
+    "building": "university",
+    "name": "Auditorium"
+  }
+},
+{
+  "type": "way",
+  "id": 380829759,
+  "center": {
+    "lat": 10.9044440,
+    "lon": 76.9018209
+  },
+  "tags": {
+    "building": "university",
+    "name": "Amrita School of Business"
+  }
+},
+{
+  "type": "way",
+  "id": 380829760,
+  "center": {
+    "lat": 10.9046257,
+    "lon": 76.9022447
+  },
+  "tags": {
+    "amenity": "restaurant",
+    "building": "yes",
+    "name": "MBA Canteen"
+  }
+},
+{
+  "type": "way",
+  "id": 380925364,
+  "center": {
+    "lat": 10.9005221,
+    "lon": 76.9027987
+  },
+  "tags": {
+    "building": "university",
+    "name": "Academic Block 1 - School of Engineering"
+  }
+},
+{
+  "type": "way",
+  "id": 380925366,
+  "center": {
+    "lat": 10.9014151,
+    "lon": 76.9047997
+  },
+  "tags": {
+    "building": "yes",
+    "building:levels": "3",
+    "name": "Yagnavalkya Bhavanam",
+    "tourism": "hostel"
+  }
+},
+{
+  "type": "way",
+  "id": 380925368,
+  "center": {
+    "lat": 10.9005090,
+    "lon": 76.9047809
+  },
+  "tags": {
+    "building": "yes",
+    "building:levels": "3",
+    "name": "Nachiketas Bhavanam",
+    "tourism": "hostel"
+  }
+},
+{
+  "type": "way",
+  "id": 380925370,
+  "center": {
+    "lat": 10.9004906,
+    "lon": 76.9038207
+  },
+  "tags": {
+    "building": "university",
+    "name": "Amriteshwari Hall"
+  }
+},
+{
+  "type": "way",
+  "id": 380925375,
+  "center": {
+    "lat": 10.9016531,
+    "lon": 76.9057706
+  },
+  "tags": {
+    "building": "yes",
+    "building:levels": "3",
+    "name": "Vyasa Maharishi Bhavanam",
+    "tourism": "hostel"
+  }
+},
+{
+  "type": "way",
+  "id": 380925377,
+  "center": {
+    "lat": 10.9028531,
+    "lon": 76.9050357
+  },
+  "tags": {
+    "building": "yes",
+    "name": "Yagnavalkya Bhavanam Annexe",
+    "tourism": "hostel"
+  }
+},
+{
+  "type": "way",
+  "id": 385666245,
+  "center": {
+    "lat": 10.9070903,
+    "lon": 76.9019445
+  },
+  "tags": {
+    "crop": "coconut",
+    "landuse": "farmland",
+    "name": "school of agriculture -farm"
+  }
+},
+{
+  "type": "way",
+  "id": 528938316,
+  "center": {
+    "lat": 10.9027422,
+    "lon": 76.9029719
+  },
+  "tags": {
+    "access": "yes",
+    "leisure": "pitch",
+    "max_age": "none",
+    "min_age": "none",
+    "name": "Amrita Playground",
+    "surface": "grass"
+  }
+},
+{
+  "type": "way",
+  "id": 531088134,
+  "center": {
+    "lat": 10.9018568,
+    "lon": 76.9020911
+  },
+  "tags": {
+    "building": "yes",
+    "leisure": "fitness_centre",
+    "name": "Amrita Boys Gym"
+  }
+},
+{
+  "type": "way",
+  "id": 531088187,
+  "center": {
+    "lat": 10.8996367,
+    "lon": 76.9003659
+  },
+  "tags": {
+    "amenity": "bank",
+    "atm": "yes",
+    "brand": "Dhanlaxmi Bank",
+    "brand:wikidata": "Q2040440",
+    "building": "yes",
+    "name": "Dhanlaxmi Bank",
+    "operator": "Dhanlaxmi Bank"
+  }
+},
+{
+  "type": "way",
+  "id": 531394576,
+  "center": {
+    "lat": 10.9020975,
+    "lon": 76.9010816
+  },
+  "tags": {
+    "amenity": "place_of_worship",
+    "building": "yes",
+    "name": "Shrine",
+    "religion": "hindu"
+  }
+},
+{
+  "type": "way",
+  "id": 546394562,
+  "center": {
+    "lat": 10.9001514,
+    "lon": 76.9036917
+  },
+  "tags": {
+    "amenity": "restaurant",
+    "building": "yes",
+    "name": "Main Canteen"
+  }
+},
+{
+  "type": "way",
+  "id": 555268261,
+  "center": {
+    "lat": 10.9038714,
+    "lon": 76.8991812
+  },
+  "tags": {
+    "landuse": "grass",
+    "leisure": "garden",
+    "name": "Amrita Library Garden"
+  }
+},
+{
+  "type": "way",
+  "id": 555808667,
+  "center": {
+    "lat": 10.8999955,
+    "lon": 76.9028428
+  },
+  "tags": {
+    "area": "yes",
+    "artwork_type": "statue",
+    "fountain": "stone_block",
+    "name": "Saraswati Statue",
+    "tourism": "artwork"
+  }
+},
+{
+  "type": "way",
+  "id": 580406525,
+  "center": {
+    "lat": 10.8921359,
+    "lon": 76.9012412
+  },
+  "tags": {
+    "highway": "unclassified",
+    "name": "Oorgounder Street"
+  }
+},
+{
+  "type": "way",
+  "id": 1080744354,
+  "center": {
+    "lat": 10.9049225,
+    "lon": 76.8980684
+  },
+  "tags": {
+    "amenity": "restaurant",
+    "building": "yes",
+    "name": "IT Canteen"
+  }
+},
+{
+  "type": "way",
+  "id": 1085121946,
+  "center": {
+    "lat": 10.8935171,
+    "lon": 76.9012067
+  },
+  "tags": {
+    "address": "Ettimadai",
+    "name": "PungaGoundenPudur",
+    "name:ml": "പുങ്കഗൗണ്ടൻപുതൂർ",
+    "name:ta": "புங்ககவுண்டன் புதூர்",
+    "place": "neighbourhood"
+  }
+},
+{
+  "type": "way",
+  "id": 1256941484,
+  "center": {
+    "lat": 10.9073899,
+    "lon": 76.8988408
+  },
+  "tags": {
+    "addr:city": "Ettimadai",
+    "addr:district": "Coimbatore",
+    "addr:street": "Amrita University",
+    "building": "yes",
+    "name": "Adithi Bhavanam",
+    "tourism": "hostel"
+  }
+},
+{
+  "type": "way",
+  "id": 1425995762,
+  "center": {
+    "lat": 10.9012907,
+    "lon": 76.8943240
+  },
+  "tags": {
+    "leisure": "playground",
+    "name": "Amrita playground - Agastya/Gautama bhavanam"
+  }
+},
+{
+  "type": "way",
+  "id": 1474795576,
+  "center": {
+    "lat": 10.8972857,
+    "lon": 76.9040934
+  },
+  "tags": {
+    "landuse": "residential",
+    "name": "Swetha Gardens"
+  }
+}
+
+  ]
+}

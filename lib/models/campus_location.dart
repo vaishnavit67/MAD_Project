@@ -1,4 +1,5 @@
 import 'checkpoint.dart';
+import '../utils/constants.dart' as c;
 
 class CampusLocation {
   final String id;
@@ -12,6 +13,9 @@ class CampusLocation {
   final bool isFavorite;
   final List<String> keywords;
   final List<Checkpoint> checkpoints;
+  final double? latitude;
+  final double? longitude;
+  final String icon;
 
   const CampusLocation({
     this.id = '',
@@ -25,7 +29,18 @@ class CampusLocation {
     this.isFavorite = false,
     this.keywords = const [],
     this.checkpoints = const [],
+    this.latitude,
+    this.longitude,
+    this.icon = 'location_on',
   });
+
+  static List<CampusLocation> get allLocations => c.campusLocations;
+
+  static List<String> get categories {
+    final cats = c.campusLocations.map((l) => l.category).toSet().toList();
+    cats.sort();
+    return ['All', ...cats];
+  }
 
   CampusLocation copyWith({
     String? id,
@@ -39,6 +54,9 @@ class CampusLocation {
     bool? isFavorite,
     List<String>? keywords,
     List<Checkpoint>? checkpoints,
+    double? latitude,
+    double? longitude,
+    String? icon,
   }) {
     return CampusLocation(
       id: id ?? this.id,
@@ -52,6 +70,9 @@ class CampusLocation {
       isFavorite: isFavorite ?? this.isFavorite,
       keywords: keywords ?? this.keywords,
       checkpoints: checkpoints ?? this.checkpoints,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      icon: icon ?? this.icon,
     );
   }
 
@@ -71,6 +92,8 @@ class CampusLocation {
               ?.map((c) => Checkpoint.fromMap(c as Map<String, dynamic>))
               .toList() ??
           const [],
+      latitude: map['latitude'] != null ? (map['latitude'] as num).toDouble() : null,
+      longitude: map['longitude'] != null ? (map['longitude'] as num).toDouble() : null,
     );
   }
 
@@ -87,6 +110,8 @@ class CampusLocation {
       'isFavorite': isFavorite,
       'keywords': keywords,
       'checkpoints': checkpoints.map((c) => c.toMap()).toList(),
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
     };
   }
 }

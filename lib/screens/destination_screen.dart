@@ -18,12 +18,18 @@ class _DestinationScreenState extends State<DestinationScreen> {
 
   CampusLocation _findLocation(String name) {
     try {
+      final clean = name.trim().toLowerCase();
       return campusLocations.firstWhere(
-        (loc) => loc.name.toLowerCase() == name.toLowerCase(),
+        (loc) =>
+            loc.name.toLowerCase() == clean ||
+            loc.name.toLowerCase().contains(clean) ||
+            clean.contains(loc.name.toLowerCase()),
         orElse: () => CampusLocation(
           name: name,
           category: 'Campus Location',
           description: '$name is a campus location available for smart navigation.',
+          latitude: amritaCampusCenterLat,
+          longitude: amritaCampusCenterLng,
         ),
       );
     } catch (_) {
@@ -31,6 +37,8 @@ class _DestinationScreenState extends State<DestinationScreen> {
         name: name,
         category: 'Campus Location',
         description: '$name is a campus location available for smart navigation.',
+        latitude: amritaCampusCenterLat,
+        longitude: amritaCampusCenterLng,
       );
     }
   }
@@ -50,6 +58,11 @@ class _DestinationScreenState extends State<DestinationScreen> {
         rawStops is List ? rawStops.map((e) => e.toString()).toList() : <String>[];
 
     final location = _findLocation(name);
+    final dijkstraResult = PathFinding.getDijkstraRoute(
+      startLocation: origin,
+      stops: stops,
+      destination: location,
+    );
     final routeCheckpoints = PathFinding.getMultiStopRoute(
       startLocation: origin,
       stops: stops,
@@ -205,12 +218,34 @@ class _DestinationScreenState extends State<DestinationScreen> {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          category,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            color: Colors.black54,
-                          ),
+                        Row(
+                          children: [
+                            Text(
+                              category,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                color: Colors.black54,
+                              ),
+                            ),
+                            if (location.latitude != null && location.longitude != null) ...[
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEAF2FF),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  '📍 ${location.latitude!.toStringAsFixed(4)}° N, ${location.longitude!.toStringAsFixed(4)}° E',
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF155EEF),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       ],
                     ),
@@ -226,15 +261,17 @@ class _DestinationScreenState extends State<DestinationScreen> {
                   Expanded(
                     child: _infoCard(
                       icon: Icons.directions_walk,
-                      title: location.distance,
-                      subtitle: 'Distance',
+                      title: dijkstraResult.totalDistanceMeters >= 1000
+                          ? '${(dijkstraResult.totalDistanceMeters / 1000).toStringAsFixed(2)} km'
+                          : '${dijkstraResult.totalDistanceMeters.round()} m',
+                      subtitle: 'Route Distance',
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: _infoCard(
                       icon: Icons.access_time,
-                      title: location.walkingTime,
+                      title: dijkstraResult.walkingTime,
                       subtitle: 'Walking time',
                     ),
                   ),
@@ -372,6 +409,17 @@ class _DestinationScreenState extends State<DestinationScreen> {
                                     height: 1.4,
                                   ),
                                 ),
+                                if (cp.latitude != null && cp.longitude != null) ...[
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'GPS: ${cp.latitude!.toStringAsFixed(5)}° N, ${cp.longitude!.toStringAsFixed(5)}° E',
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                      color: Color(0xFF155EEF),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
                               ],
                             ),
                           ),
@@ -400,6 +448,7 @@ class _DestinationScreenState extends State<DestinationScreen> {
                             'category': category,
                             'origin': origin,
                             'stops': stops,
+                            'startLiveGps': true,
                           },
                         );
                       },
@@ -429,6 +478,8 @@ class _DestinationScreenState extends State<DestinationScreen> {
                             context,
                             location,
                             routeCheckpoints,
+                            origin: origin,
+                            stops: stops,
                           ),
                           icon: const Icon(Icons.record_voice_over_rounded, size: 18, color: Color(0xFF155EEF)),
                           label: const Text(
@@ -523,8 +574,10 @@ class _DestinationScreenState extends State<DestinationScreen> {
   void _showGuidancePreviewModal(
     BuildContext context,
     CampusLocation location,
-    List<Checkpoint> checkpoints,
-  ) {
+    List<Checkpoint> checkpoints, {
+    String origin = 'Campus Main Gate',
+    List<String> stops = const [],
+  }) {
     bool isAudioOn = true;
 
     showModalBottomSheet(
@@ -694,7 +747,9 @@ class _DestinationScreenState extends State<DestinationScreen> {
                           arguments: <String, dynamic>{
                             'name': location.name,
                             'category': location.category,
-                            'origin': location.name,
+                            'origin': origin,
+                            'stops': stops,
+                            'startLiveGps': true,
                           },
                         );
                       },

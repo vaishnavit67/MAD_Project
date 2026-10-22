@@ -1,0 +1,3044 @@
+[
+  {
+    "id": "",
+    "name": "AB1",
+    "category": "Academic Block",
+    "description": "Academic Block 1 houses Engineering lecture halls, Computer Science department offices, smart classrooms, and faculty cabins.",
+    "distance": "290 m",
+    "walkingTime": "~4 min",
+    "buildingCode": "BLK-A1",
+    "floorCount": 4,
+    "isFavorite": true,
+    "keywords": [
+      "academic",
+      "study",
+      "class",
+      "engineering",
+      "computer science",
+      "lecture",
+      "lab",
+      "ab1"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from the campus Main Entrance Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Main Avenue Bend",
+        "instruction": "Walk northeast along Amrita Main Avenue.",
+        "dx": -0.5,
+        "dy": 0.35,
+        "isStop": false,
+        "latitude": 10.8994,
+        "longitude": 76.9015
+      },
+      {
+        "label": "3",
+        "title": "Saraswati Statue Circle",
+        "instruction": "Pass Saraswati Statue circle.",
+        "dx": -0.35,
+        "dy": -0.05,
+        "isStop": false,
+        "latitude": 10.8998,
+        "longitude": 76.90215
+      },
+      {
+        "label": "4",
+        "title": "AB1 Portico Steps",
+        "instruction": "Arrive at AB1 Main Entrance steps.",
+        "dx": -0.4,
+        "dy": -0.35,
+        "isStop": false,
+        "latitude": 10.90008,
+        "longitude": 76.90215
+      }
+    ],
+    "latitude": 10.90008,
+    "longitude": 76.90215
+  },
+  {
+    "id": "",
+    "name": "AB2",
+    "category": "Academic Block",
+    "description": "Academic Block 2 features Civil & Mechanical Engineering departments, seminar rooms, and material testing labs.",
+    "distance": "580 m",
+    "walkingTime": "~7 min",
+    "buildingCode": "BLK-A2",
+    "floorCount": 4,
+    "isFavorite": false,
+    "keywords": [
+      "academic",
+      "study",
+      "class",
+      "civil",
+      "mechanical",
+      "lecture",
+      "ab2"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start at the Main Gate entrance.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Central Academic Circle",
+        "instruction": "Walk north past Central Academic Circle.",
+        "dx": -0.6,
+        "dy": 0.25,
+        "isStop": false,
+        "latitude": 10.90265,
+        "longitude": 76.90045
+      },
+      {
+        "label": "3",
+        "title": "Library Garden Plaza",
+        "instruction": "Cross Library Plaza near Arjuna Statue.",
+        "dx": -0.65,
+        "dy": -0.1,
+        "isStop": false,
+        "latitude": 10.90365,
+        "longitude": 76.8995
+      },
+      {
+        "label": "4",
+        "title": "AB2 Main Entrance",
+        "instruction": "Arrive at AB2 Main Portico.",
+        "dx": -0.65,
+        "dy": -0.45,
+        "isStop": false,
+        "latitude": 10.90348,
+        "longitude": 76.8985
+      }
+    ],
+    "latitude": 10.90348,
+    "longitude": 76.8985
+  },
+  {
+    "id": "",
+    "name": "AB3",
+    "category": "Academic Block",
+    "description": "Academic Block 3 contains International School of Law, AI, Robotics, and Embedded Systems laboratories.",
+    "distance": "780 m",
+    "walkingTime": "~10 min",
+    "buildingCode": "BLK-A3",
+    "floorCount": 5,
+    "isFavorite": true,
+    "keywords": [
+      "academic",
+      "study",
+      "class",
+      "law",
+      "robotics",
+      "ai",
+      "lab",
+      "ab3"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Head north along Central Avenue.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Central Academic Circle",
+        "instruction": "Pass Central Academic Circle.",
+        "dx": -0.45,
+        "dy": 0.1,
+        "isStop": false,
+        "latitude": 10.90265,
+        "longitude": 76.90045
+      },
+      {
+        "label": "3",
+        "title": "West Academic Avenue",
+        "instruction": "Walk northwest past AB2 west walkway.",
+        "dx": -0.5,
+        "dy": -0.4,
+        "isStop": false,
+        "latitude": 10.9052,
+        "longitude": 76.8976
+      },
+      {
+        "label": "4",
+        "title": "AB3 Portico",
+        "instruction": "Arrive at AB3 Main Entrance.",
+        "dx": -0.55,
+        "dy": -0.75,
+        "isStop": false,
+        "latitude": 10.90585,
+        "longitude": 76.8975
+      }
+    ],
+    "latitude": 10.90585,
+    "longitude": 76.8975
+  },
+  {
+    "id": "",
+    "name": "AB4",
+    "category": "Academic Block",
+    "description": "Cyber Lab & Advanced Computing block housing high-performance servers, cyber forensics, and science labs.",
+    "distance": "610 m",
+    "walkingTime": "~8 min",
+    "buildingCode": "BLK-A4",
+    "floorCount": 3,
+    "isFavorite": false,
+    "keywords": [
+      "academic",
+      "study",
+      "class",
+      "cyber",
+      "computing",
+      "physics",
+      "ab4",
+      "lab"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start at Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Library Promenade",
+        "instruction": "Walk along Library East Promenade.",
+        "dx": -0.5,
+        "dy": 0.35,
+        "isStop": false,
+        "latitude": 10.9042,
+        "longitude": 76.89955
+      },
+      {
+        "label": "3",
+        "title": "North Academic Cross",
+        "instruction": "Turn toward North Academic Cross.",
+        "dx": -0.25,
+        "dy": -0.15,
+        "isStop": false,
+        "latitude": 10.9052,
+        "longitude": 76.89955
+      },
+      {
+        "label": "4",
+        "title": "Cyber Lab Entrance",
+        "instruction": "Arrive at Cyber Lab Entrance.",
+        "dx": -0.2,
+        "dy": -0.65,
+        "isStop": false,
+        "latitude": 10.9052,
+        "longitude": 76.8986
+      }
+    ],
+    "latitude": 10.9052,
+    "longitude": 76.8986
+  },
+  {
+    "id": "",
+    "name": "MBA Block",
+    "category": "Academic Block",
+    "description": "Amrita School of Business featuring executive lecture halls, case discussion rooms, and management lounge.",
+    "distance": "620 m",
+    "walkingTime": "~8 min",
+    "buildingCode": "BLK-M1",
+    "floorCount": 3,
+    "isFavorite": false,
+    "keywords": [
+      "academic",
+      "study",
+      "class",
+      "mba",
+      "business",
+      "management",
+      "finance"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Head north along Central Avenue.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Management Avenue Fork",
+        "instruction": "Turn northeast at Management Avenue.",
+        "dx": -0.45,
+        "dy": 0.4,
+        "isStop": false,
+        "latitude": 10.90365,
+        "longitude": 76.9008
+      },
+      {
+        "label": "3",
+        "title": "Management Avenue",
+        "instruction": "Walk down tree-lined Management Avenue.",
+        "dx": -0.25,
+        "dy": 0.1,
+        "isStop": false,
+        "latitude": 10.904,
+        "longitude": 76.9015
+      },
+      {
+        "label": "4",
+        "title": "School of Business Portico",
+        "instruction": "Arrive at MBA Block Entrance.",
+        "dx": -0.1,
+        "dy": -0.25,
+        "isStop": false,
+        "latitude": 10.9041,
+        "longitude": 76.9018
+      }
+    ],
+    "latitude": 10.9041,
+    "longitude": 76.9018
+  },
+  {
+    "id": "",
+    "name": "Administrative Block",
+    "category": "Administrative Block",
+    "description": "Main University Administrative Headquarters containing Vice-Chancellor Office, Registrar, Admissions, and Academic Administration.",
+    "distance": "520 m",
+    "walkingTime": "~7 min",
+    "buildingCode": "ADM-01",
+    "floorCount": 3,
+    "isFavorite": false,
+    "keywords": [
+      "admin",
+      "office",
+      "registrar",
+      "admissions",
+      "fee",
+      "vc",
+      "administrative"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Central Circle",
+        "instruction": "Walk north along Central Boulevard.",
+        "dx": -0.3,
+        "dy": 0.3,
+        "isStop": false,
+        "latitude": 10.90265,
+        "longitude": 76.90045
+      },
+      {
+        "label": "3",
+        "title": "Admin Walkway",
+        "instruction": "Arrive at Admin Block Reception.",
+        "dx": 0.0,
+        "dy": -0.2,
+        "isStop": false,
+        "latitude": 10.9038,
+        "longitude": 76.9002
+      }
+    ],
+    "latitude": 10.9038,
+    "longitude": 76.9002
+  },
+  {
+    "id": "",
+    "name": "CIR Block",
+    "category": "Administrative Block",
+    "description": "Corporate & Industry Relations center handling campus placements, internship drives, and corporate hiring.",
+    "distance": "710 m",
+    "walkingTime": "~9 min",
+    "buildingCode": "ADM-02",
+    "floorCount": 3,
+    "isFavorite": false,
+    "keywords": [
+      "cir",
+      "placement",
+      "job",
+      "interview",
+      "career",
+      "internship",
+      "administrative"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Management Avenue",
+        "instruction": "Walk down Management Avenue.",
+        "dx": -0.4,
+        "dy": 0.3,
+        "isStop": false,
+        "latitude": 10.904,
+        "longitude": 76.9015
+      },
+      {
+        "label": "3",
+        "title": "Corporate Drive",
+        "instruction": "Walk down Corporate Drive.",
+        "dx": -0.05,
+        "dy": 0.0,
+        "isStop": false,
+        "latitude": 10.9049,
+        "longitude": 76.90144
+      },
+      {
+        "label": "4",
+        "title": "CIR Placement Block",
+        "instruction": "Arrive at CIR Block Entrance.",
+        "dx": 0.25,
+        "dy": -0.4,
+        "isStop": false,
+        "latitude": 10.9051,
+        "longitude": 76.90165
+      }
+    ],
+    "latitude": 10.9051,
+    "longitude": 76.90165
+  },
+  {
+    "id": "",
+    "name": "Central Library",
+    "category": "Library",
+    "description": "Four-story central library containing over 100,000 volumes, quiet study zones, digital archives, and computer labs.",
+    "distance": "580 m",
+    "walkingTime": "~7 min",
+    "buildingCode": "LIB-01",
+    "floorCount": 4,
+    "isFavorite": true,
+    "keywords": [
+      "academic",
+      "library",
+      "study",
+      "book",
+      "reading",
+      "quiet",
+      "journal",
+      "research",
+      "paper"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start at Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Temple Plaza",
+        "instruction": "Walk past Temple Plaza.",
+        "dx": -0.5,
+        "dy": 0.35,
+        "isStop": false,
+        "latitude": 10.90195,
+        "longitude": 76.89977
+      },
+      {
+        "label": "3",
+        "title": "Central Academic Circle",
+        "instruction": "Follow Central Boulevard.",
+        "dx": -0.2,
+        "dy": 0.0,
+        "isStop": false,
+        "latitude": 10.90265,
+        "longitude": 76.90045
+      },
+      {
+        "label": "4",
+        "title": "Arjuna Chariot Plaza",
+        "instruction": "Pass bronze Arjuna Statue and Library Garden.",
+        "dx": 0.0,
+        "dy": -0.35,
+        "isStop": false,
+        "latitude": 10.90365,
+        "longitude": 76.8995
+      },
+      {
+        "label": "5",
+        "title": "Central Library Entrance",
+        "instruction": "Arrive at Library main entrance.",
+        "dx": 0.15,
+        "dy": -0.7,
+        "isStop": false,
+        "latitude": 10.90385,
+        "longitude": 76.8992
+      }
+    ],
+    "latitude": 10.90385,
+    "longitude": 76.8992
+  },
+  {
+    "id": "",
+    "name": "Amrita Library Garden",
+    "category": "Landmark",
+    "description": "Peaceful landscaped botanical garden and reading terrace beside the Central Library and Arjuna Plaza.",
+    "distance": "560 m",
+    "walkingTime": "~7 min",
+    "buildingCode": "REC-02",
+    "floorCount": 1,
+    "isFavorite": false,
+    "keywords": [
+      "garden",
+      "library",
+      "green",
+      "peace",
+      "study",
+      "relax",
+      "park"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Arjuna Plaza",
+        "instruction": "Walk to Arjuna Statue Plaza.",
+        "dx": -0.1,
+        "dy": 0.2,
+        "isStop": false,
+        "latitude": 10.90365,
+        "longitude": 76.8995
+      },
+      {
+        "label": "3",
+        "title": "Library Garden",
+        "instruction": "Enter Library Garden terraces.",
+        "dx": 0.2,
+        "dy": -0.3,
+        "isStop": false,
+        "latitude": 10.90365,
+        "longitude": 76.8992
+      }
+    ],
+    "latitude": 10.90365,
+    "longitude": 76.8992
+  },
+  {
+    "id": "",
+    "name": "Main Canteen",
+    "category": "Canteen",
+    "description": "Primary campus food court serving South Indian meals, North Indian dishes, daily specials, fresh juices, and snacks.",
+    "distance": "350 m",
+    "walkingTime": "~4 min",
+    "buildingCode": "DIN-01",
+    "floorCount": 2,
+    "isFavorite": true,
+    "keywords": [
+      "food",
+      "eat",
+      "hungry",
+      "canteen",
+      "lunch",
+      "dinner",
+      "breakfast",
+      "juice",
+      "snack",
+      "meals",
+      "coffee"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Saraswati Statue",
+        "instruction": "Walk past Saraswati Statue towards AB1.",
+        "dx": -0.4,
+        "dy": 0.55,
+        "isStop": false,
+        "latitude": 10.8998,
+        "longitude": 76.90215
+      },
+      {
+        "label": "3",
+        "title": "Main Canteen Courtyard",
+        "instruction": "Arrive at Main Canteen dining court.",
+        "dx": 0.0,
+        "dy": 0.4,
+        "isStop": false,
+        "latitude": 10.89985,
+        "longitude": 76.9035
+      }
+    ],
+    "latitude": 10.89985,
+    "longitude": 76.9035
+  },
+  {
+    "id": "",
+    "name": "Millet Cafe",
+    "category": "Canteen",
+    "description": "Eco-friendly cafe specializing in organic millet snacks, fresh smoothies, herbal teas, and healthy quick bites.",
+    "distance": "370 m",
+    "walkingTime": "~5 min",
+    "buildingCode": "DIN-02",
+    "floorCount": 1,
+    "isFavorite": false,
+    "keywords": [
+      "food",
+      "eat",
+      "hungry",
+      "cafe",
+      "millet",
+      "coffee",
+      "tea",
+      "healthy",
+      "smoothie",
+      "snack"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Walk along Central Boulevard.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Temple Plaza Path",
+        "instruction": "Follow green tree line path past Temple.",
+        "dx": -0.5,
+        "dy": 0.55,
+        "isStop": false,
+        "latitude": 10.90195,
+        "longitude": 76.89977
+      },
+      {
+        "label": "3",
+        "title": "Millet Cafe Veranda",
+        "instruction": "Arrive at Millet Cafe outdoor terrace.",
+        "dx": -0.15,
+        "dy": 0.4,
+        "isStop": false,
+        "latitude": 10.9024,
+        "longitude": 76.89975
+      }
+    ],
+    "latitude": 10.9024,
+    "longitude": 76.89975
+  },
+  {
+    "id": "",
+    "name": "IT Canteen",
+    "category": "Canteen",
+    "description": "Popular eatery among engineering students behind AB2 for quick rolls, shakes, and fast food.",
+    "distance": "670 m",
+    "walkingTime": "~8 min",
+    "buildingCode": "DIN-03",
+    "floorCount": 1,
+    "isFavorite": false,
+    "keywords": [
+      "food",
+      "eat",
+      "hungry",
+      "canteen",
+      "shake",
+      "fast food",
+      "it",
+      "rolls"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Head north past Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "AB2 Main Portico",
+        "instruction": "Pass AB2 south entrance.",
+        "dx": -0.7,
+        "dy": 0.35,
+        "isStop": false,
+        "latitude": 10.90348,
+        "longitude": 76.8985
+      },
+      {
+        "label": "3",
+        "title": "West Academic Avenue",
+        "instruction": "Walk along west academic corridor.",
+        "dx": -0.65,
+        "dy": 0.05,
+        "isStop": false,
+        "latitude": 10.90435,
+        "longitude": 76.8976
+      },
+      {
+        "label": "4",
+        "title": "IT Canteen Deck",
+        "instruction": "Arrive at IT Canteen deck.",
+        "dx": -0.6,
+        "dy": -0.15,
+        "isStop": false,
+        "latitude": 10.9048,
+        "longitude": 76.89785
+      }
+    ],
+    "latitude": 10.9048,
+    "longitude": 76.89785
+  },
+  {
+    "id": "",
+    "name": "MBA Canteen",
+    "category": "Canteen",
+    "description": "Refreshment food court located adjacent to the School of Business offering coffee, rolls, and meals.",
+    "distance": "650 m",
+    "walkingTime": "~8 min",
+    "buildingCode": "DIN-04",
+    "floorCount": 1,
+    "isFavorite": false,
+    "keywords": [
+      "food",
+      "eat",
+      "hungry",
+      "canteen",
+      "coffee",
+      "sandwich",
+      "snack",
+      "mba"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Head north along Central Avenue.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Management Avenue",
+        "instruction": "Turn onto Management Avenue.",
+        "dx": -0.4,
+        "dy": 0.45,
+        "isStop": false,
+        "latitude": 10.904,
+        "longitude": 76.9015
+      },
+      {
+        "label": "3",
+        "title": "MBA Canteen Counter",
+        "instruction": "Arrive at MBA Canteen seating.",
+        "dx": -0.1,
+        "dy": 0.05,
+        "isStop": false,
+        "latitude": 10.9044,
+        "longitude": 76.90215
+      }
+    ],
+    "latitude": 10.9044,
+    "longitude": 76.90215
+  },
+  {
+    "id": "",
+    "name": "Agastya Mess",
+    "category": "Canteen",
+    "description": "Dining hall facility serving nutritious breakfasts, lunches, and dinners for west hostel students.",
+    "distance": "640 m",
+    "walkingTime": "~8 min",
+    "buildingCode": "DIN-05",
+    "floorCount": 2,
+    "isFavorite": false,
+    "keywords": [
+      "food",
+      "mess",
+      "dining",
+      "lunch",
+      "dinner",
+      "agastya",
+      "gautama",
+      "hostel"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "West Ring Road",
+        "instruction": "Follow West Hostels Ring Road.",
+        "dx": -0.3,
+        "dy": 0.2,
+        "isStop": false,
+        "latitude": 10.9022,
+        "longitude": 76.89665
+      },
+      {
+        "label": "3",
+        "title": "Mess Gate",
+        "instruction": "Arrive at Agastya/Gautama Mess.",
+        "dx": 0.1,
+        "dy": -0.3,
+        "isStop": false,
+        "latitude": 10.903,
+        "longitude": 76.8965
+      }
+    ],
+    "latitude": 10.903,
+    "longitude": 76.8965
+  },
+  {
+    "id": "",
+    "name": "Central Kitchen",
+    "category": "Canteen",
+    "description": "Automated campus steam kitchen preparing meals for all dining halls with high hygiene standards.",
+    "distance": "270 m",
+    "walkingTime": "~3 min",
+    "buildingCode": "DIN-06",
+    "floorCount": 1,
+    "isFavorite": false,
+    "keywords": [
+      "kitchen",
+      "cooking",
+      "food",
+      "catering",
+      "central",
+      "steam"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Central Boulevard",
+        "instruction": "Walk down Central Boulevard.",
+        "dx": -0.4,
+        "dy": 0.3,
+        "isStop": false,
+        "latitude": 10.9015,
+        "longitude": 76.89975
+      },
+      {
+        "label": "3",
+        "title": "Central Kitchen",
+        "instruction": "Arrive at Central Kitchen service entrance.",
+        "dx": 0.0,
+        "dy": 0.1,
+        "isStop": false,
+        "latitude": 10.90155,
+        "longitude": 76.901
+      }
+    ],
+    "latitude": 10.90155,
+    "longitude": 76.901
+  },
+  {
+    "id": "",
+    "name": "Mythreyi Bhavanam",
+    "category": "Girls Hostel",
+    "description": "Girls residential complex featuring study halls, mess facilities, and 24/7 security desk.",
+    "distance": "210 m",
+    "walkingTime": "~3 min",
+    "buildingCode": "GH-01",
+    "floorCount": 5,
+    "isFavorite": false,
+    "keywords": [
+      "hostel",
+      "stay",
+      "girls",
+      "residence",
+      "room",
+      "mythreyi",
+      "maitheyi",
+      "bhavanam"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start at Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "South Avenue Boulevard",
+        "instruction": "Walk along South Avenue.",
+        "dx": -0.2,
+        "dy": 0.5,
+        "isStop": false,
+        "latitude": 10.8994,
+        "longitude": 76.9015
+      },
+      {
+        "label": "3",
+        "title": "Maitheyi Entrance Way",
+        "instruction": "Turn into Maitheyi Way.",
+        "dx": 0.25,
+        "dy": 0.35,
+        "isStop": false,
+        "latitude": 10.8994,
+        "longitude": 76.9012
+      },
+      {
+        "label": "4",
+        "title": "Mythreyi Bhavanam Entrance",
+        "instruction": "Arrive at Mythreyi Bhavanam.",
+        "dx": 0.65,
+        "dy": 0.2,
+        "isStop": false,
+        "latitude": 10.9004,
+        "longitude": 76.9012
+      }
+    ],
+    "latitude": 10.9004,
+    "longitude": 76.9012
+  },
+  {
+    "id": "",
+    "name": "Gargi Bhavanam",
+    "category": "Girls Hostel",
+    "description": "Modern residence hall for senior female students near Central Academic Circle.",
+    "distance": "450 m",
+    "walkingTime": "~6 min",
+    "buildingCode": "GH-02",
+    "floorCount": 5,
+    "isFavorite": false,
+    "keywords": [
+      "hostel",
+      "stay",
+      "girls",
+      "residence",
+      "gargi",
+      "bhavanam"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Central Spine Avenue",
+        "instruction": "Walk north past Temple Plaza.",
+        "dx": -0.2,
+        "dy": 0.5,
+        "isStop": false,
+        "latitude": 10.90195,
+        "longitude": 76.89977
+      },
+      {
+        "label": "3",
+        "title": "Central Academic Circle",
+        "instruction": "Follow Central Circle.",
+        "dx": 0.35,
+        "dy": 0.4,
+        "isStop": false,
+        "latitude": 10.90265,
+        "longitude": 76.90045
+      },
+      {
+        "label": "4",
+        "title": "Gargi Bhavanam Lobby",
+        "instruction": "Arrive at Gargi Bhavanam Gate.",
+        "dx": 0.75,
+        "dy": 0.35,
+        "isStop": false,
+        "latitude": 10.9035,
+        "longitude": 76.90035
+      }
+    ],
+    "latitude": 10.9035,
+    "longitude": 76.90035
+  },
+  {
+    "id": "",
+    "name": "Aditi Bhavanam",
+    "category": "Girls Hostel",
+    "description": "Girls student residence located on North Campus near the Swimming Pool.",
+    "distance": "950 m",
+    "walkingTime": "~12 min",
+    "buildingCode": "GH-03",
+    "floorCount": 4,
+    "isFavorite": false,
+    "keywords": [
+      "hostel",
+      "stay",
+      "girls",
+      "residence",
+      "aditi",
+      "adithi",
+      "bhavanam"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start at Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Central Academic Circle",
+        "instruction": "Pass Central Academic Circle.",
+        "dx": -0.2,
+        "dy": 0.5,
+        "isStop": false,
+        "latitude": 10.90265,
+        "longitude": 76.90045
+      },
+      {
+        "label": "3",
+        "title": "West Pool Promenade",
+        "instruction": "Follow roadway around the west of Swimming Pool.",
+        "dx": 0.2,
+        "dy": 0.5,
+        "isStop": false,
+        "latitude": 10.90611,
+        "longitude": 76.89827
+      },
+      {
+        "label": "4",
+        "title": "Aditi Bhavanam Portico",
+        "instruction": "Arrive at Aditi Bhavanam.",
+        "dx": 0.55,
+        "dy": 0.45,
+        "isStop": false,
+        "latitude": 10.90733,
+        "longitude": 76.8988
+      }
+    ],
+    "latitude": 10.90733,
+    "longitude": 76.8988
+  },
+  {
+    "id": "",
+    "name": "Savitri Bhavanam",
+    "category": "Girls Hostel",
+    "description": "Girls residential accommodation block with quiet study garden.",
+    "distance": "480 m",
+    "walkingTime": "~6 min",
+    "buildingCode": "GH-04",
+    "floorCount": 4,
+    "isFavorite": false,
+    "keywords": [
+      "hostel",
+      "stay",
+      "girls",
+      "residence",
+      "savitri",
+      "bhavanam"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "South Avenue Boulevard",
+        "instruction": "Walk along South Avenue.",
+        "dx": -0.2,
+        "dy": 0.5,
+        "isStop": false,
+        "latitude": 10.89945,
+        "longitude": 76.90356
+      },
+      {
+        "label": "3",
+        "title": "Savitri Bhavanam Gate",
+        "instruction": "Arrive at Savitri Bhavanam.",
+        "dx": 0.7,
+        "dy": 0.6,
+        "isStop": false,
+        "latitude": 10.8979,
+        "longitude": 76.9049
+      }
+    ],
+    "latitude": 10.8979,
+    "longitude": 76.9049
+  },
+  {
+    "id": "",
+    "name": "Vasishta Bhavanam",
+    "category": "Boys Hostel",
+    "description": "Boys residence hall situated in the quiet west campus sector.",
+    "distance": "560 m",
+    "walkingTime": "~7 min",
+    "buildingCode": "BH-01",
+    "floorCount": 6,
+    "isFavorite": false,
+    "keywords": [
+      "hostel",
+      "stay",
+      "boys",
+      "residence",
+      "vasishta",
+      "bhavanam"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start at Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "West Promenade",
+        "instruction": "Walk past Temple towards Guest House.",
+        "dx": -0.5,
+        "dy": 0.35,
+        "isStop": false,
+        "latitude": 10.9015,
+        "longitude": 76.8997
+      },
+      {
+        "label": "3",
+        "title": "West Hostels Ring Road",
+        "instruction": "Follow West Hostels Ring Road.",
+        "dx": 0.2,
+        "dy": -0.15,
+        "isStop": false,
+        "latitude": 10.9021,
+        "longitude": 76.8965
+      },
+      {
+        "label": "4",
+        "title": "Vasishta Bhavanam Quad",
+        "instruction": "Arrive at Vasishta Bhavanam.",
+        "dx": 0.8,
+        "dy": -0.35,
+        "isStop": false,
+        "latitude": 10.90205,
+        "longitude": 76.8964
+      }
+    ],
+    "latitude": 10.90205,
+    "longitude": 76.8964
+  },
+  {
+    "id": "",
+    "name": "Agasthya Bhavanam",
+    "category": "Boys Hostel",
+    "description": "Boys student accommodation hall on West campus near Agastya Mess.",
+    "distance": "620 m",
+    "walkingTime": "~8 min",
+    "buildingCode": "BH-02",
+    "floorCount": 5,
+    "isFavorite": false,
+    "keywords": [
+      "hostel",
+      "stay",
+      "boys",
+      "residence",
+      "agasthya",
+      "agastya",
+      "bhavanam"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "West Hostels Ring Road",
+        "instruction": "Follow West Ring Road.",
+        "dx": -0.5,
+        "dy": 0.35,
+        "isStop": false,
+        "latitude": 10.9021,
+        "longitude": 76.8965
+      },
+      {
+        "label": "3",
+        "title": "Agasthya Hostel Path",
+        "instruction": "Turn right into Agasthya Quad.",
+        "dx": 0.4,
+        "dy": -0.3,
+        "isStop": false,
+        "latitude": 10.9022,
+        "longitude": 76.89635
+      }
+    ],
+    "latitude": 10.9022,
+    "longitude": 76.89635
+  },
+  {
+    "id": "",
+    "name": "Gauthama Bhavanam",
+    "category": "Boys Hostel",
+    "description": "Senior boys hostel located near West Ring Road and the sports grounds.",
+    "distance": "590 m",
+    "walkingTime": "~8 min",
+    "buildingCode": "BH-03",
+    "floorCount": 5,
+    "isFavorite": false,
+    "keywords": [
+      "hostel",
+      "stay",
+      "boys",
+      "residence",
+      "gauthama",
+      "gautama",
+      "bhavanam"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "West Ring Road",
+        "instruction": "Walk past Guest House onto West Ring Road.",
+        "dx": -0.3,
+        "dy": 0.2,
+        "isStop": false,
+        "latitude": 10.90225,
+        "longitude": 76.8974
+      },
+      {
+        "label": "3",
+        "title": "Gauthama Quad",
+        "instruction": "Arrive at Gauthama Bhavanam Gate.",
+        "dx": 0.1,
+        "dy": -0.1,
+        "isStop": false,
+        "latitude": 10.9024,
+        "longitude": 76.89765
+      }
+    ],
+    "latitude": 10.9024,
+    "longitude": 76.89765
+  },
+  {
+    "id": "",
+    "name": "Nachiketas Bhavanam",
+    "category": "Boys Hostel",
+    "description": "Junior boys hostel block located adjacent to East Hostel Avenue and Main Canteen.",
+    "distance": "460 m",
+    "walkingTime": "~6 min",
+    "buildingCode": "BH-04",
+    "floorCount": 5,
+    "isFavorite": false,
+    "keywords": [
+      "hostel",
+      "stay",
+      "boys",
+      "residence",
+      "nachiketas",
+      "bhavanam"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "East Hostel Avenue",
+        "instruction": "Walk past Amriteshwari Hall.",
+        "dx": -0.2,
+        "dy": 0.3,
+        "isStop": false,
+        "latitude": 10.90035,
+        "longitude": 76.9045
+      },
+      {
+        "label": "3",
+        "title": "Nachiketas Entrance",
+        "instruction": "Arrive at Nachiketas Bhavanam.",
+        "dx": 0.2,
+        "dy": 0.1,
+        "isStop": false,
+        "latitude": 10.9005,
+        "longitude": 76.90455
+      }
+    ],
+    "latitude": 10.9005,
+    "longitude": 76.90455
+  },
+  {
+    "id": "",
+    "name": "Yagnavalkya Bhavanam",
+    "category": "Boys Hostel",
+    "description": "Major undergraduate boys residential complex with central quad and badminton courts.",
+    "distance": "510 m",
+    "walkingTime": "~7 min",
+    "buildingCode": "BH-05",
+    "floorCount": 6,
+    "isFavorite": false,
+    "keywords": [
+      "hostel",
+      "stay",
+      "boys",
+      "residence",
+      "yagnavalkya",
+      "kashyapa",
+      "bhavanam"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Saraswati Statue",
+        "instruction": "Pass Saraswati Statue.",
+        "dx": -0.5,
+        "dy": 0.35,
+        "isStop": false,
+        "latitude": 10.8998,
+        "longitude": 76.90215
+      },
+      {
+        "label": "3",
+        "title": "East Hostel Road",
+        "instruction": "Walk along East Hostel Avenue.",
+        "dx": 0.1,
+        "dy": 0.0,
+        "isStop": false,
+        "latitude": 10.90035,
+        "longitude": 76.9045
+      },
+      {
+        "label": "4",
+        "title": "Hostel Quad Entrance",
+        "instruction": "Arrive at Yagnavalkya Quad.",
+        "dx": 0.6,
+        "dy": -0.2,
+        "isStop": false,
+        "latitude": 10.90105,
+        "longitude": 76.9048
+      }
+    ],
+    "latitude": 10.90105,
+    "longitude": 76.9048
+  },
+  {
+    "id": "",
+    "name": "Yagnavalkya Annexe",
+    "category": "Boys Hostel",
+    "description": "Extended accommodation wing for postgraduate and research students.",
+    "distance": "620 m",
+    "walkingTime": "~8 min",
+    "buildingCode": "BH-06",
+    "floorCount": 4,
+    "isFavorite": false,
+    "keywords": [
+      "hostel",
+      "stay",
+      "boys",
+      "annexe",
+      "yagnavalkya",
+      "residence"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Hostel Quad",
+        "instruction": "Pass Yagnavalkya Main Quad.",
+        "dx": -0.2,
+        "dy": 0.3,
+        "isStop": false,
+        "latitude": 10.90095,
+        "longitude": 76.9048
+      },
+      {
+        "label": "3",
+        "title": "Annexe Portico",
+        "instruction": "Arrive at Yagnavalkya Annexe.",
+        "dx": 0.3,
+        "dy": -0.2,
+        "isStop": false,
+        "latitude": 10.90285,
+        "longitude": 76.90503
+      }
+    ],
+    "latitude": 10.90285,
+    "longitude": 76.90503
+  },
+  {
+    "id": "",
+    "name": "Vyasa Bhavanam",
+    "category": "Boys Hostel",
+    "description": "Boys residence hall situated in the tranquil eastern sector of the campus.",
+    "distance": "590 m",
+    "walkingTime": "~8 min",
+    "buildingCode": "BH-07",
+    "floorCount": 5,
+    "isFavorite": false,
+    "keywords": [
+      "hostel",
+      "stay",
+      "boys",
+      "residence",
+      "vyasa",
+      "bhavanam"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Vyasa Approach Lane",
+        "instruction": "Walk down Vyasa Approach Lane.",
+        "dx": 0.1,
+        "dy": 0.2,
+        "isStop": false,
+        "latitude": 10.90095,
+        "longitude": 76.90535
+      },
+      {
+        "label": "3",
+        "title": "Vyasa Bhavanam Gate",
+        "instruction": "Arrive at Vyasa Maharishi Bhavanam.",
+        "dx": 0.4,
+        "dy": -0.1,
+        "isStop": false,
+        "latitude": 10.90165,
+        "longitude": 76.9054
+      }
+    ],
+    "latitude": 10.90165,
+    "longitude": 76.9054
+  },
+  {
+    "id": "",
+    "name": "Main Ground",
+    "category": "Sports Facility",
+    "description": "Amrita Playground athletic ground with 400m running track, football pitch, cricket ground, and pavilion.",
+    "distance": "480 m",
+    "walkingTime": "~6 min",
+    "buildingCode": "SPT-01",
+    "floorCount": 1,
+    "isFavorite": false,
+    "keywords": [
+      "sports",
+      "play",
+      "ground",
+      "football",
+      "cricket",
+      "run",
+      "track",
+      "fitness",
+      "gym"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Temple Plaza",
+        "instruction": "Walk north past Temple Plaza.",
+        "dx": -0.5,
+        "dy": 0.35,
+        "isStop": false,
+        "latitude": 10.90195,
+        "longitude": 76.89977
+      },
+      {
+        "label": "3",
+        "title": "Academic Sports Connector",
+        "instruction": "Turn right along Sports Connector.",
+        "dx": 0.0,
+        "dy": -0.3,
+        "isStop": false,
+        "latitude": 10.90265,
+        "longitude": 76.90045
+      },
+      {
+        "label": "4",
+        "title": "Main Ground Gate",
+        "instruction": "Arrive at Amrita Playground.",
+        "dx": 0.45,
+        "dy": -0.85,
+        "isStop": false,
+        "latitude": 10.9026,
+        "longitude": 76.9026
+      }
+    ],
+    "latitude": 10.9026,
+    "longitude": 76.9026
+  },
+  {
+    "id": "",
+    "name": "Swimming Pool",
+    "category": "Sports Facility",
+    "description": "Olympic-standard 8-lane campus swimming pool with dedicated diving decks and lifeguards.",
+    "distance": "820 m",
+    "walkingTime": "~10 min",
+    "buildingCode": "SPT-02",
+    "floorCount": 1,
+    "isFavorite": false,
+    "keywords": [
+      "sports",
+      "play",
+      "swim",
+      "swimming",
+      "pool",
+      "water",
+      "fitness"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start at Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Central Academic Circle",
+        "instruction": "Pass Central Circle.",
+        "dx": -0.5,
+        "dy": 0.35,
+        "isStop": false,
+        "latitude": 10.90265,
+        "longitude": 76.90045
+      },
+      {
+        "label": "3",
+        "title": "East Campus Avenue",
+        "instruction": "Turn onto Aquatic Center Drive.",
+        "dx": 0.3,
+        "dy": -0.4,
+        "isStop": false,
+        "latitude": 10.90622,
+        "longitude": 76.89935
+      },
+      {
+        "label": "4",
+        "title": "Swimming Pool Entrance",
+        "instruction": "Arrive at Aquatic Center Entrance & Portico.",
+        "dx": 0.75,
+        "dy": -0.75,
+        "isStop": false,
+        "latitude": 10.90598,
+        "longitude": 76.89882
+      }
+    ],
+    "latitude": 10.90598,
+    "longitude": 76.89882
+  },
+  {
+    "id": "",
+    "name": "Amrita Boys Gym",
+    "category": "Sports Facility",
+    "description": "Fully equipped bodybuilding and cardio fitness center located near the University Clinic.",
+    "distance": "360 m",
+    "walkingTime": "~5 min",
+    "buildingCode": "SPT-03",
+    "floorCount": 2,
+    "isFavorite": false,
+    "keywords": [
+      "gym",
+      "fitness",
+      "workout",
+      "weights",
+      "exercise",
+      "training",
+      "boys gym"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Clinic Crossroad",
+        "instruction": "Walk past Clinic service lane.",
+        "dx": -0.2,
+        "dy": 0.3,
+        "isStop": false,
+        "latitude": 10.90155,
+        "longitude": 76.90155
+      },
+      {
+        "label": "3",
+        "title": "Gym Portico",
+        "instruction": "Arrive at Amrita Boys Gym Entrance.",
+        "dx": 0.3,
+        "dy": 0.0,
+        "isStop": false,
+        "latitude": 10.9016,
+        "longitude": 76.90205
+      }
+    ],
+    "latitude": 10.9016,
+    "longitude": 76.90205
+  },
+  {
+    "id": "",
+    "name": "Arogya Sadhanam Gym",
+    "category": "Sports Facility",
+    "description": "Western campus gym, physical conditioning, yoga, and wellness center.",
+    "distance": "680 m",
+    "walkingTime": "~9 min",
+    "buildingCode": "SPT-04",
+    "floorCount": 2,
+    "isFavorite": false,
+    "keywords": [
+      "gym",
+      "fitness",
+      "arogya",
+      "sadhanam",
+      "workout",
+      "yoga",
+      "wellness"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "West Ring Road",
+        "instruction": "Follow West Ring Road past Vasishta.",
+        "dx": -0.3,
+        "dy": 0.2,
+        "isStop": false,
+        "latitude": 10.9021,
+        "longitude": 76.8953
+      },
+      {
+        "label": "3",
+        "title": "Arogya Sadhanam Portico",
+        "instruction": "Arrive at Arogya Sadhanam Gym.",
+        "dx": 0.2,
+        "dy": -0.4,
+        "isStop": false,
+        "latitude": 10.9017,
+        "longitude": 76.895
+      }
+    ],
+    "latitude": 10.9017,
+    "longitude": 76.895
+  },
+  {
+    "id": "",
+    "name": "West Sports Ground",
+    "category": "Sports Facility",
+    "description": "Open athletic recreation field and volleyball courts for west hostel residents.",
+    "distance": "740 m",
+    "walkingTime": "~10 min",
+    "buildingCode": "SPT-05",
+    "floorCount": 1,
+    "isFavorite": false,
+    "keywords": [
+      "sports",
+      "ground",
+      "volleyball",
+      "play",
+      "field",
+      "recreation"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Arogya Gym Bend",
+        "instruction": "Follow pathway past Arogya Sadhanam.",
+        "dx": -0.3,
+        "dy": 0.1,
+        "isStop": false,
+        "latitude": 10.9021,
+        "longitude": 76.8953
+      },
+      {
+        "label": "3",
+        "title": "West Playground",
+        "instruction": "Arrive at West Sports Ground.",
+        "dx": 0.1,
+        "dy": -0.3,
+        "isStop": false,
+        "latitude": 10.90129,
+        "longitude": 76.89432
+      }
+    ],
+    "latitude": 10.90129,
+    "longitude": 76.89432
+  },
+  {
+    "id": "",
+    "name": "Children's Park",
+    "category": "Landmark",
+    "description": "Lush green campus garden with walking tracks, Saraswati statue, and shaded benches.",
+    "distance": "270 m",
+    "walkingTime": "~3 min",
+    "buildingCode": "REC-01",
+    "floorCount": 1,
+    "isFavorite": false,
+    "keywords": [
+      "park",
+      "garden",
+      "green",
+      "walk",
+      "relax",
+      "bench"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "South Avenue",
+        "instruction": "Walk down South Avenue.",
+        "dx": -0.2,
+        "dy": 0.5,
+        "isStop": false,
+        "latitude": 10.8994,
+        "longitude": 76.9015
+      },
+      {
+        "label": "3",
+        "title": "Garden Lawn",
+        "instruction": "Arrive at Campus Garden.",
+        "dx": 0.3,
+        "dy": 0.55,
+        "isStop": false,
+        "latitude": 10.8998,
+        "longitude": 76.90215
+      }
+    ],
+    "latitude": 10.8998,
+    "longitude": 76.90215
+  },
+  {
+    "id": "",
+    "name": "Campus Temple",
+    "category": "Place of Worship",
+    "description": "Serene central campus temple and prayer sanctum surrounded by flowering trees.",
+    "distance": "340 m",
+    "walkingTime": "~4 min",
+    "buildingCode": "SHR-01",
+    "floorCount": 1,
+    "isFavorite": true,
+    "keywords": [
+      "temple",
+      "shrine",
+      "prayer",
+      "worship",
+      "puja",
+      "spiritual",
+      "peace"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Central Boulevard",
+        "instruction": "Walk north along Central Boulevard.",
+        "dx": -0.4,
+        "dy": 0.35,
+        "isStop": false,
+        "latitude": 10.9015,
+        "longitude": 76.89975
+      },
+      {
+        "label": "3",
+        "title": "Temple Plaza",
+        "instruction": "Arrive at Temple Plaza Entrance.",
+        "dx": 0.1,
+        "dy": 0.1,
+        "isStop": false,
+        "latitude": 10.902,
+        "longitude": 76.90045
+      }
+    ],
+    "latitude": 10.902,
+    "longitude": 76.90045
+  },
+  {
+    "id": "",
+    "name": "Saraswati Statue",
+    "category": "Landmark",
+    "description": "Iconic statue of Goddess Saraswati, symbol of wisdom and learning, at the AB1 crossroads.",
+    "distance": "270 m",
+    "walkingTime": "~3 min",
+    "buildingCode": "LMK-01",
+    "floorCount": 1,
+    "isFavorite": false,
+    "keywords": [
+      "statue",
+      "saraswati",
+      "landmark",
+      "monument",
+      "ab1",
+      "circle"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Main Avenue",
+        "instruction": "Walk down Main Avenue.",
+        "dx": -0.3,
+        "dy": 0.3,
+        "isStop": false,
+        "latitude": 10.8994,
+        "longitude": 76.9015
+      },
+      {
+        "label": "3",
+        "title": "Statue Circle",
+        "instruction": "Arrive at Saraswati Statue.",
+        "dx": 0.2,
+        "dy": 0.1,
+        "isStop": false,
+        "latitude": 10.8998,
+        "longitude": 76.90215
+      }
+    ],
+    "latitude": 10.8998,
+    "longitude": 76.90215
+  },
+  {
+    "id": "",
+    "name": "Arjuna Statue",
+    "category": "Landmark",
+    "description": "Historic bronze chariot sculpture depicting Lord Krishna imparting the Gita to warrior Arjuna.",
+    "distance": "550 m",
+    "walkingTime": "~7 min",
+    "buildingCode": "LMK-02",
+    "floorCount": 1,
+    "isFavorite": false,
+    "keywords": [
+      "statue",
+      "arjuna",
+      "krishna",
+      "chariot",
+      "landmark",
+      "library",
+      "sculpture"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Library Avenue",
+        "instruction": "Pass Central Academic Circle toward Library.",
+        "dx": -0.3,
+        "dy": 0.2,
+        "isStop": false,
+        "latitude": 10.90355,
+        "longitude": 76.90035
+      },
+      {
+        "label": "3",
+        "title": "Arjuna Plaza",
+        "instruction": "Arrive at Arjuna Chariot Monument.",
+        "dx": 0.1,
+        "dy": -0.1,
+        "isStop": false,
+        "latitude": 10.90365,
+        "longitude": 76.8995
+      }
+    ],
+    "latitude": 10.90365,
+    "longitude": 76.8995
+  },
+  {
+    "id": "",
+    "name": "Natarajar Statue",
+    "category": "Landmark",
+    "description": "Cosmic dancer Nataraja bronze idol situated in the serene courtyard adjacent to AB2 portico.",
+    "distance": "570 m",
+    "walkingTime": "~7 min",
+    "buildingCode": "LMK-03",
+    "floorCount": 1,
+    "isFavorite": false,
+    "keywords": [
+      "statue",
+      "nataraja",
+      "natarajar",
+      "dance",
+      "shiva",
+      "ab2",
+      "landmark"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "AB2 Portico",
+        "instruction": "Walk past AB2 entrance terrace.",
+        "dx": -0.2,
+        "dy": 0.1,
+        "isStop": false,
+        "latitude": 10.90348,
+        "longitude": 76.8985
+      },
+      {
+        "label": "3",
+        "title": "Natarajar Courtyard",
+        "instruction": "Arrive at Natarajar Statue.",
+        "dx": 0.1,
+        "dy": -0.2,
+        "isStop": false,
+        "latitude": 10.9033,
+        "longitude": 76.89843
+      }
+    ],
+    "latitude": 10.9033,
+    "longitude": 76.89843
+  },
+  {
+    "id": "",
+    "name": "Dhanalakshmi Bank",
+    "category": "Store",
+    "description": "Full-service bank branch for student fee payments, challans, and account services near Main Gate.",
+    "distance": "50 m",
+    "walkingTime": "~1 min",
+    "buildingCode": "BNK-01",
+    "floorCount": 1,
+    "isFavorite": false,
+    "keywords": [
+      "bank",
+      "money",
+      "cash",
+      "fee",
+      "dhanalakshmi",
+      "account",
+      "deposit",
+      "pay"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Main Gate Arcade",
+        "instruction": "Step into Main Gate Arcade.",
+        "dx": -0.55,
+        "dy": 0.6,
+        "isStop": false,
+        "latitude": 10.8995,
+        "longitude": 76.9002
+      },
+      {
+        "label": "3",
+        "title": "Dhanlaxmi Bank Branch",
+        "instruction": "Arrive at Dhanlaxmi Bank.",
+        "dx": -0.3,
+        "dy": 0.55,
+        "isStop": false,
+        "latitude": 10.89952,
+        "longitude": 76.90018
+      }
+    ],
+    "latitude": 10.89952,
+    "longitude": 76.90018
+  },
+  {
+    "id": "",
+    "name": "Dhanalakshmi ATM 1",
+    "category": "ATM",
+    "description": "24/7 ATM booth located at the Main Gate branch.",
+    "distance": "50 m",
+    "walkingTime": "~1 min",
+    "buildingCode": "ATM-01",
+    "floorCount": 1,
+    "isFavorite": false,
+    "keywords": [
+      "atm",
+      "money",
+      "cash",
+      "withdraw",
+      "pay",
+      "dhanalakshmi"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "ATM Kiosk 1",
+        "instruction": "Arrive at Dhanlaxmi ATM 1.",
+        "dx": -0.4,
+        "dy": 0.4,
+        "isStop": false,
+        "latitude": 10.89952,
+        "longitude": 76.90018
+      }
+    ],
+    "latitude": 10.89952,
+    "longitude": 76.90018
+  },
+  {
+    "id": "",
+    "name": "Dhanalakshmi ATM 2",
+    "category": "ATM",
+    "description": "24/7 ATM booth located near Academic Block 1 (AB1).",
+    "distance": "280 m",
+    "walkingTime": "~4 min",
+    "buildingCode": "ATM-02",
+    "floorCount": 1,
+    "isFavorite": false,
+    "keywords": [
+      "atm",
+      "money",
+      "cash",
+      "withdraw",
+      "pay",
+      "dhanalakshmi",
+      "ab1"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start at Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "AB1 Portico Walk",
+        "instruction": "Walk down AB1 Portico Walk.",
+        "dx": -0.5,
+        "dy": 0.0,
+        "isStop": false,
+        "latitude": 10.8998,
+        "longitude": 76.90215
+      },
+      {
+        "label": "3",
+        "title": "ATM Kiosk 2",
+        "instruction": "Arrive at Dhanlaxmi ATM 2.",
+        "dx": -0.45,
+        "dy": -0.3,
+        "isStop": false,
+        "latitude": 10.90008,
+        "longitude": 76.90215
+      }
+    ],
+    "latitude": 10.90008,
+    "longitude": 76.90215
+  },
+  {
+    "id": "",
+    "name": "ICICI ATM",
+    "category": "ATM",
+    "description": "ATM machine located near the Main Gate Arcade.",
+    "distance": "40 m",
+    "walkingTime": "~1 min",
+    "buildingCode": "ATM-03",
+    "floorCount": 1,
+    "isFavorite": true,
+    "keywords": [
+      "atm",
+      "money",
+      "cash",
+      "withdraw",
+      "icici",
+      "pay"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "ICICI ATM Booth",
+        "instruction": "Arrive at ICICI ATM booth.",
+        "dx": -0.55,
+        "dy": 0.5,
+        "isStop": false,
+        "latitude": 10.89945,
+        "longitude": 76.90025
+      }
+    ],
+    "latitude": 10.89945,
+    "longitude": 76.90025
+  },
+  {
+    "id": "",
+    "name": "SBI ATM",
+    "category": "ATM",
+    "description": "State Bank of India 24/7 ATM booth near Central Library.",
+    "distance": "580 m",
+    "walkingTime": "~7 min",
+    "buildingCode": "ATM-04",
+    "floorCount": 1,
+    "isFavorite": false,
+    "keywords": [
+      "atm",
+      "money",
+      "cash",
+      "withdraw",
+      "sbi",
+      "state bank",
+      "pay"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Central Academic Circle",
+        "instruction": "Pass Academic Circle.",
+        "dx": -0.5,
+        "dy": 0.35,
+        "isStop": false,
+        "latitude": 10.90265,
+        "longitude": 76.90045
+      },
+      {
+        "label": "3",
+        "title": "Library Steps",
+        "instruction": "Arrive at SBI ATM booth.",
+        "dx": 0.1,
+        "dy": -0.6,
+        "isStop": false,
+        "latitude": 10.90385,
+        "longitude": 76.8992
+      }
+    ],
+    "latitude": 10.90385,
+    "longitude": 76.8992
+  },
+  {
+    "id": "",
+    "name": "University Clinic",
+    "category": "Medical Facility",
+    "description": "24/7 Campus Health Center equipped with emergency beds, resident medical officer, and ambulance services.",
+    "distance": "310 m",
+    "walkingTime": "~4 min",
+    "buildingCode": "MED-01",
+    "floorCount": 1,
+    "isFavorite": false,
+    "keywords": [
+      "health",
+      "doctor",
+      "clinic",
+      "medicine",
+      "hospital",
+      "emergency",
+      "first aid",
+      "nurse"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Central Dining Avenue",
+        "instruction": "Walk along Central Boulevard.",
+        "dx": -0.4,
+        "dy": 0.3,
+        "isStop": false,
+        "latitude": 10.9015,
+        "longitude": 76.89975
+      },
+      {
+        "label": "3",
+        "title": "Clinic Crossroad",
+        "instruction": "Follow Clinic Service Lane.",
+        "dx": -0.15,
+        "dy": 0.1,
+        "isStop": false,
+        "latitude": 10.90155,
+        "longitude": 76.901
+      },
+      {
+        "label": "4",
+        "title": "Health Center Portico",
+        "instruction": "Arrive at University Clinic.",
+        "dx": 0.1,
+        "dy": -0.1,
+        "isStop": false,
+        "latitude": 10.90155,
+        "longitude": 76.90155
+      }
+    ],
+    "latitude": 10.90155,
+    "longitude": 76.90155
+  },
+  {
+    "id": "",
+    "name": "General Store",
+    "category": "Store",
+    "description": "Central utility store selling stationery, printouts, daily essentials, snacks, and toiletries.",
+    "distance": "260 m",
+    "walkingTime": "~3 min",
+    "buildingCode": "STR-01",
+    "floorCount": 1,
+    "isFavorite": false,
+    "keywords": [
+      "shop",
+      "store",
+      "buy",
+      "pen",
+      "paper",
+      "stationery",
+      "print",
+      "snack"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Central Boulevard",
+        "instruction": "Follow Central Boulevard.",
+        "dx": -0.5,
+        "dy": 0.45,
+        "isStop": false,
+        "latitude": 10.9015,
+        "longitude": 76.89975
+      },
+      {
+        "label": "3",
+        "title": "Utility Store Front",
+        "instruction": "Arrive at General Store.",
+        "dx": -0.2,
+        "dy": 0.15,
+        "isStop": false,
+        "latitude": 10.90155,
+        "longitude": 76.901
+      }
+    ],
+    "latitude": 10.90155,
+    "longitude": 76.901
+  },
+  {
+    "id": "",
+    "name": "Amrita Guest House",
+    "category": "Landmark",
+    "description": "Amrita Guest House for visiting dignitaries, conference guests, and parents.",
+    "distance": "340 m",
+    "walkingTime": "~4 min",
+    "buildingCode": "GST-01",
+    "floorCount": 2,
+    "isFavorite": false,
+    "keywords": [
+      "guest",
+      "house",
+      "stay",
+      "visitor",
+      "parent",
+      "hotel"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Central Dining Lane",
+        "instruction": "Walk toward Dining Lane Fork.",
+        "dx": -0.2,
+        "dy": 0.5,
+        "isStop": false,
+        "latitude": 10.9015,
+        "longitude": 76.89975
+      },
+      {
+        "label": "3",
+        "title": "West Garden Way",
+        "instruction": "Turn onto West Garden Way.",
+        "dx": 0.4,
+        "dy": 0.3,
+        "isStop": false,
+        "latitude": 10.9015,
+        "longitude": 76.8997
+      },
+      {
+        "label": "4",
+        "title": "Guest House Portico",
+        "instruction": "Arrive at Amrita Guest House.",
+        "dx": 0.8,
+        "dy": 0.1,
+        "isStop": false,
+        "latitude": 10.90155,
+        "longitude": 76.8991
+      }
+    ],
+    "latitude": 10.90155,
+    "longitude": 76.8991
+  },
+  {
+    "id": "",
+    "name": "Amriteshwari Hall",
+    "category": "Auditorium",
+    "description": "Major university auditorium for convocations, cultural programs, and conferences beside Main Canteen.",
+    "distance": "380 m",
+    "walkingTime": "~5 min",
+    "buildingCode": "AUD-01",
+    "floorCount": 2,
+    "isFavorite": false,
+    "keywords": [
+      "hall",
+      "auditorium",
+      "event",
+      "amriteshwari",
+      "fest",
+      "stage",
+      "program"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Saraswati Statue",
+        "instruction": "Pass Saraswati Statue towards AB1.",
+        "dx": -0.3,
+        "dy": 0.45,
+        "isStop": false,
+        "latitude": 10.8998,
+        "longitude": 76.90215
+      },
+      {
+        "label": "3",
+        "title": "Canteen Promenade",
+        "instruction": "Walk past Canteen Promenade.",
+        "dx": 0.0,
+        "dy": 0.3,
+        "isStop": false,
+        "latitude": 10.89945,
+        "longitude": 76.9035
+      },
+      {
+        "label": "4",
+        "title": "Amriteshwari Hall Steps",
+        "instruction": "Arrive at Amriteshwari Hall.",
+        "dx": 0.25,
+        "dy": 0.2,
+        "isStop": false,
+        "latitude": 10.90035,
+        "longitude": 76.9035
+      }
+    ],
+    "latitude": 10.90035,
+    "longitude": 76.9035
+  },
+  {
+    "id": "",
+    "name": "Sudhamani Hall",
+    "category": "Auditorium",
+    "description": "Main university convention hall for international summits, conferences, and student symposiums.",
+    "distance": "670 m",
+    "walkingTime": "~8 min",
+    "buildingCode": "AUD-02",
+    "floorCount": 2,
+    "isFavorite": false,
+    "keywords": [
+      "hall",
+      "seminar",
+      "workshop",
+      "sudhamani",
+      "lecture",
+      "conference",
+      "auditorium"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Management Avenue",
+        "instruction": "Follow Management Avenue.",
+        "dx": -0.2,
+        "dy": 0.4,
+        "isStop": false,
+        "latitude": 10.904,
+        "longitude": 76.9015
+      },
+      {
+        "label": "3",
+        "title": "Auditorium Promenade",
+        "instruction": "Pass Business School toward Auditorium.",
+        "dx": 0.15,
+        "dy": 0.2,
+        "isStop": false,
+        "latitude": 10.9041,
+        "longitude": 76.9018
+      },
+      {
+        "label": "4",
+        "title": "Main Auditorium Foyer",
+        "instruction": "Arrive at Main Auditorium.",
+        "dx": 0.4,
+        "dy": 0.05,
+        "isStop": false,
+        "latitude": 10.90425,
+        "longitude": 76.9024
+      }
+    ],
+    "latitude": 10.90425,
+    "longitude": 76.9024
+  },
+  {
+    "id": "",
+    "name": "Fabrication Workshop",
+    "category": "Laboratory",
+    "description": "Heavy mechanical fabrication workshops, welding booths, CNC routers, and manufacturing labs.",
+    "distance": "790 m",
+    "walkingTime": "~10 min",
+    "buildingCode": "LAB-01",
+    "floorCount": 1,
+    "isFavorite": false,
+    "keywords": [
+      "lab",
+      "laboratory",
+      "mechanical",
+      "workshop",
+      "fabrication",
+      "welding",
+      "manufacturing"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Industrial Lane",
+        "instruction": "Walk down Industrial Labs Lane.",
+        "dx": -0.3,
+        "dy": 0.2,
+        "isStop": false,
+        "latitude": 10.90435,
+        "longitude": 76.8962
+      },
+      {
+        "label": "3",
+        "title": "Workshop Gate",
+        "instruction": "Arrive at Fabrication Workshop.",
+        "dx": 0.2,
+        "dy": -0.3,
+        "isStop": false,
+        "latitude": 10.9048,
+        "longitude": 76.8957
+      }
+    ],
+    "latitude": 10.9048,
+    "longitude": 76.8957
+  },
+  {
+    "id": "",
+    "name": "Mechanical Labs",
+    "category": "Laboratory",
+    "description": "Thermal engineering, fluid mechanics, CAD/CAM suites, and strength of materials laboratories.",
+    "distance": "790 m",
+    "walkingTime": "~10 min",
+    "buildingCode": "LAB-02",
+    "floorCount": 2,
+    "isFavorite": false,
+    "keywords": [
+      "lab",
+      "laboratory",
+      "mechanical",
+      "thermal",
+      "fluid",
+      "cad",
+      "cam"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Mechanical Quad",
+        "instruction": "Walk down Industrial Workshop Lane.",
+        "dx": -0.4,
+        "dy": 0.1,
+        "isStop": false,
+        "latitude": 10.90435,
+        "longitude": 76.8962
+      },
+      {
+        "label": "3",
+        "title": "Labs Entrance",
+        "instruction": "Arrive at Mechanical Engineering Labs.",
+        "dx": 0.1,
+        "dy": -0.3,
+        "isStop": false,
+        "latitude": 10.9048,
+        "longitude": 76.8957
+      }
+    ],
+    "latitude": 10.9048,
+    "longitude": 76.8957
+  },
+  {
+    "id": "",
+    "name": "Automotive Research Centre",
+    "category": "Laboratory",
+    "description": "Amrita Automotive Research & Testing Centre (AARTC) with engine dynamometers and EV testing.",
+    "distance": "740 m",
+    "walkingTime": "~9 min",
+    "buildingCode": "LAB-03",
+    "floorCount": 2,
+    "isFavorite": false,
+    "keywords": [
+      "lab",
+      "laboratory",
+      "automotive",
+      "aartc",
+      "ev",
+      "vehicle",
+      "engine",
+      "testing"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "AARTC Lane",
+        "instruction": "Follow Automotive Research Lane.",
+        "dx": -0.2,
+        "dy": 0.3,
+        "isStop": false,
+        "latitude": 10.9036,
+        "longitude": 76.8962
+      },
+      {
+        "label": "3",
+        "title": "AARTC Main Portico",
+        "instruction": "Arrive at Automotive Research Centre.",
+        "dx": 0.2,
+        "dy": -0.2,
+        "isStop": false,
+        "latitude": 10.9036,
+        "longitude": 76.896
+      }
+    ],
+    "latitude": 10.9036,
+    "longitude": 76.896
+  },
+  {
+    "id": "",
+    "name": "Electrical Labs",
+    "category": "Laboratory",
+    "description": "High voltage engineering, electrical machinery, power electronics, and smart grid research labs.",
+    "distance": "740 m",
+    "walkingTime": "~9 min",
+    "buildingCode": "LAB-04",
+    "floorCount": 2,
+    "isFavorite": false,
+    "keywords": [
+      "lab",
+      "laboratory",
+      "electrical",
+      "machines",
+      "power",
+      "circuits",
+      "electronics"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Research Quad",
+        "instruction": "Pass AARTC approach.",
+        "dx": -0.2,
+        "dy": 0.3,
+        "isStop": false,
+        "latitude": 10.9036,
+        "longitude": 76.8962
+      },
+      {
+        "label": "3",
+        "title": "Electrical Labs Portico",
+        "instruction": "Arrive at Electrical Labs.",
+        "dx": 0.1,
+        "dy": -0.2,
+        "isStop": false,
+        "latitude": 10.9036,
+        "longitude": 76.896
+      }
+    ],
+    "latitude": 10.9036,
+    "longitude": 76.896
+  },
+  {
+    "id": "",
+    "name": "School of Agriculture Farm",
+    "category": "Landmark",
+    "description": "University experimental organic farm, agronomy demonstration plots, and hydroponics greenhouses.",
+    "distance": "860 m",
+    "walkingTime": "~11 min",
+    "buildingCode": "FLD-01",
+    "floorCount": 1,
+    "isFavorite": false,
+    "keywords": [
+      "farm",
+      "agriculture",
+      "greenhouse",
+      "field",
+      "organic",
+      "crops",
+      "plants"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "Corporate Drive North",
+        "instruction": "Pass CIR block heading north.",
+        "dx": -0.1,
+        "dy": 0.2,
+        "isStop": false,
+        "latitude": 10.9049,
+        "longitude": 76.90144
+      },
+      {
+        "label": "3",
+        "title": "Farm Road",
+        "instruction": "Arrive at School of Agriculture Farm.",
+        "dx": 0.2,
+        "dy": -0.3,
+        "isStop": false,
+        "latitude": 10.90709,
+        "longitude": 76.90194
+      }
+    ],
+    "latitude": 10.90709,
+    "longitude": 76.90194
+  },
+  {
+    "id": "",
+    "name": "Main Gate Entrance",
+    "category": "Transit",
+    "description": "Primary university entrance gate, security station, visitor reception, and auto-rickshaw stand.",
+    "distance": "0 m",
+    "walkingTime": "~0 min",
+    "buildingCode": "GTE-01",
+    "floorCount": 1,
+    "isFavorite": true,
+    "keywords": [
+      "gate",
+      "entry",
+      "exit",
+      "security",
+      "main gate",
+      "auto",
+      "transit"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Main campus entrance gate.",
+        "dx": 0.0,
+        "dy": 0.0,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      }
+    ],
+    "latitude": 10.89926,
+    "longitude": 76.90061
+  },
+  {
+    "id": "",
+    "name": "Ettimadai Railway Station",
+    "category": "Transit",
+    "description": "Ettimadai railway station on Southern Railway network connecting Coimbatore Junction and Palakkad.",
+    "distance": "710 m",
+    "walkingTime": "~9 min",
+    "buildingCode": "TRN-01",
+    "floorCount": 1,
+    "isFavorite": true,
+    "keywords": [
+      "train",
+      "station",
+      "railway",
+      "ettimadai",
+      "transit",
+      "travel",
+      "commute",
+      "transport"
+    ],
+    "checkpoints": [
+      {
+        "label": "1",
+        "title": "Main Gate Entrance",
+        "instruction": "Start from Main Gate.",
+        "dx": -0.8,
+        "dy": 0.7,
+        "isStop": false,
+        "latitude": 10.89926,
+        "longitude": 76.90061
+      },
+      {
+        "label": "2",
+        "title": "West Ring Road",
+        "instruction": "Follow road past Arogya Sadhanam Gym.",
+        "dx": -0.4,
+        "dy": 0.2,
+        "isStop": false,
+        "latitude": 10.9021,
+        "longitude": 76.8953
+      },
+      {
+        "label": "3",
+        "title": "Station Approach",
+        "instruction": "Follow Station Road approach.",
+        "dx": 0.1,
+        "dy": -0.2,
+        "isStop": false,
+        "latitude": 10.89848,
+        "longitude": 76.89597
+      },
+      {
+        "label": "4",
+        "title": "Ettimadai Platform",
+        "instruction": "Arrive at Ettimadai Railway Station.",
+        "dx": 0.3,
+        "dy": -0.5,
+        "isStop": false,
+        "latitude": 10.89848,
+        "longitude": 76.89597
+      }
+    ],
+    "latitude": 10.89848,
+    "longitude": 76.89597
+  }
+]

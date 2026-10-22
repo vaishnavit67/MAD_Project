@@ -1,30 +1,37 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:campus_navigator/main.dart';
+import 'package:campus_navigator/screens/map_screen.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+  testWidgets('CampusConnectApp smoke test', (WidgetTester tester) async {
+    // Build CampusConnectApp and trigger a frame.
     await tester.pumpWidget(const CampusConnectApp());
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pumpAndSettle();
+    expect(find.byType(CampusConnectApp), findsOneWidget);
+  });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+  testWidgets('MapScreen renders and handles route arguments without throwing', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        onGenerateRoute: (settings) {
+          return MaterialPageRoute(
+            settings: const RouteSettings(
+              name: '/map',
+              arguments: {
+                'name': 'AB3',
+                'origin': 'Main Gate Entrance',
+                'stops': <String>[],
+              },
+            ),
+            builder: (context) => const MapScreen(),
+          );
+        },
+      ),
+    );
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    await tester.pumpAndSettle();
+    expect(find.byType(MapScreen), findsOneWidget);
   });
 }

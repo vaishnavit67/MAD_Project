@@ -5,6 +5,8 @@ class Checkpoint {
   final double dx;
   final double dy;
   final bool isStop; // Indicates intermediate stop
+  final double? latitude;
+  final double? longitude;
 
   const Checkpoint({
     required this.label,
@@ -13,6 +15,8 @@ class Checkpoint {
     this.dx = 0.5,
     this.dy = 0.5,
     this.isStop = false,
+    this.latitude,
+    this.longitude,
   });
 
   factory Checkpoint.fromMap(Map<String, dynamic> map) {
@@ -23,6 +27,8 @@ class Checkpoint {
       dx: (map['dx'] ?? 0.5).toDouble(),
       dy: (map['dy'] ?? 0.5).toDouble(),
       isStop: map['isStop'] ?? false,
+      latitude: map['latitude'] != null ? (map['latitude'] as num).toDouble() : null,
+      longitude: map['longitude'] != null ? (map['longitude'] as num).toDouble() : null,
     );
   }
 
@@ -34,6 +40,8 @@ class Checkpoint {
       'dx': dx,
       'dy': dy,
       'isStop': isStop,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
     };
   }
 }

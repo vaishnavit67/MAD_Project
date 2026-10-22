@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 import '../services/auth_service.dart';
+import '../utils/validators.dart';
 import 'login_screen.dart';
-import 'navigation_screen.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -20,6 +20,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _rollNumberController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -39,10 +40,35 @@ class _SignupScreenState extends State<SignupScreen> {
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
     _rollNumberController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  String _getEmailHint() {
+    switch (_selectedRole) {
+      case 'Visitor':
+        return 'user@gmail.com';
+      case 'Faculty':
+        return 'faculty@cb.amrita.edu';
+      case 'Student':
+      default:
+        return 'student@cb.students.amrita.edu';
+    }
+  }
+
+  String _getEmailHelperText() {
+    switch (_selectedRole) {
+      case 'Visitor':
+        return 'Visitors must register with @gmail.com';
+      case 'Faculty':
+        return 'Faculty must register with @cb.amrita.edu';
+      case 'Student':
+      default:
+        return 'Students must register with @cb.students.amrita.edu';
+    }
   }
 
   double _calculatePasswordStrength() {
@@ -56,9 +82,9 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Color _getStrengthColor(double strength) {
-    if (strength <= 0.33) return Colors.red;
-    if (strength <= 0.66) return Colors.amber;
-    return Colors.green;
+    if (strength <= 0.33) return const Color(0xFFF04438);
+    if (strength <= 0.66) return const Color(0xFFF79009);
+    return const Color(0xFF12B76A);
   }
 
   String _getStrengthText(double strength) {
@@ -73,6 +99,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
+    final phone = _phoneController.text.trim();
     final rollNumber = _rollNumberController.text.trim();
     final password = _passwordController.text;
 
@@ -81,48 +108,31 @@ class _SignupScreenState extends State<SignupScreen> {
     });
 
     try {
-      await _authService.signUpWithEmail(
+      final AuthResult result = await _authService.signUpUser(
         name: name,
         email: email,
+        phone: phone,
         rollNumber: rollNumber,
         password: password,
+        role: _selectedRole,
       );
 
       if (!mounted) return;
 
-      _showMessage('Account created successfully!');
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const NavigationScreen(),
-        ),
-      );
-    } on FirebaseAuthException catch (e) {
-      String message;
-      switch (e.code) {
-        case 'email-already-in-use':
-          message = 'An account already exists with this email.';
-          break;
-        case 'invalid-email':
-          message = 'Please enter a valid email address.';
-          break;
-        case 'weak-password':
-          message = 'Password is too weak. Please use a stronger password.';
-          break;
-        default:
-          message = e.message ?? 'Unable to create account.';
-      }
-      _showMessage(message);
-    } catch (_) {
-      // Offline fallback
-      if (mounted) {
-        _showMessage('Account registered in local mode!');
+      _showMessage(result.message, isError: !result.success);
+
+      if (result.success) {
+        // Redirect to LoginScreen with pre-filled email
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => const NavigationScreen(),
+            builder: (context) => LoginScreen(initialIdentity: email),
           ),
         );
+      }
+    } catch (_) {
+      if (mounted) {
+        _showMessage('Failed to complete registration. Please try again.', isError: true);
       }
     } finally {
       if (mounted) {
@@ -133,10 +143,33 @@ class _SignupScreenState extends State<SignupScreen> {
     }
   }
 
-  void _showMessage(String message) {
+  void _showMessage(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Row(
+          children: [
+            Icon(
+              isError ? Icons.error_outline_rounded : Icons.check_circle_outline_rounded,
+              color: Colors.white,
+              size: 20,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: isError ? const Color(0xFFD92D20) : const Color(0xFF079455),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 4),
       ),
     );
   }
@@ -152,6 +185,7 @@ class _SignupScreenState extends State<SignupScreen> {
           padding: const EdgeInsets.fromLTRB(28, 25, 28, 30),
           child: Form(
             key: _formKey,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -212,7 +246,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
                 const SizedBox(height: 24),
 
-                // Campus Role Selector Bar (WOW FEATURE)
+                // Campus Role Selector Bar
                 const Text(
                   'Registering as:',
                   style: TextStyle(
@@ -231,6 +265,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           setState(() {
                             _selectedRole = role;
                           });
+                          _formKey.currentState?.validate();
                         },
                         child: Container(
                           margin: const EdgeInsets.only(right: 6),
@@ -274,14 +309,10 @@ class _SignupScreenState extends State<SignupScreen> {
 
                 TextFormField(
                   controller: _nameController,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter your full name';
-                    }
-                    return null;
-                  },
+                  validator: FormValidators.validateName,
+                  keyboardType: TextInputType.name,
                   decoration: _inputDecoration(
-                    hint: 'Enter your full name',
+                    hint: 'e.g. Ananya Sharma',
                     icon: Icons.person_outline_rounded,
                   ),
                 ),
@@ -289,9 +320,9 @@ class _SignupScreenState extends State<SignupScreen> {
                 const SizedBox(height: 18),
 
                 // Email Address
-                const Text(
-                  'Email Address',
-                  style: TextStyle(
+                Text(
+                  '$_selectedRole Email Address',
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF344054),
@@ -303,26 +334,19 @@ class _SignupScreenState extends State<SignupScreen> {
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter your email address';
-                    }
-                    if (!value.contains('@')) {
-                      return 'Please enter a valid email address';
-                    }
-                    return null;
-                  },
+                  validator: (value) => FormValidators.validateEmailForRole(value, _selectedRole),
                   decoration: _inputDecoration(
-                    hint: 'Enter your email address',
+                    hint: _getEmailHint(),
                     icon: Icons.email_outlined,
+                    helperText: _getEmailHelperText(),
                   ),
                 ),
 
                 const SizedBox(height: 18),
 
-                // Roll Number
+                // Phone Number
                 const Text(
-                  'Roll Number / Campus ID',
+                  'Phone Number',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -333,15 +357,40 @@ class _SignupScreenState extends State<SignupScreen> {
                 const SizedBox(height: 8),
 
                 TextFormField(
-                  controller: _rollNumberController,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter your roll number';
-                    }
-                    return null;
-                  },
+                  controller: _phoneController,
+                  keyboardType: TextInputType.phone,
+                  validator: FormValidators.validatePhone,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(10),
+                  ],
                   decoration: _inputDecoration(
-                    hint: 'Enter your roll number',
+                    hint: '10-digit mobile number (e.g. 9876543210)',
+                    icon: Icons.phone_outlined,
+                    helperText: 'Must be exactly 10 numeric digits',
+                  ),
+                ),
+
+                const SizedBox(height: 18),
+
+                // Roll Number
+                Text(
+                  _selectedRole == 'Faculty' ? 'Faculty ID' : (_selectedRole == 'Visitor' ? 'Pass ID' : 'Roll Number / Campus ID'),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF344054),
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                TextFormField(
+                  controller: _rollNumberController,
+                  validator: FormValidators.validateRollNumber,
+                  textCapitalization: TextCapitalization.characters,
+                  decoration: _inputDecoration(
+                    hint: _selectedRole == 'Faculty' ? 'e.g. EMP1024' : (_selectedRole == 'Visitor' ? 'e.g. VIS1001' : 'e.g. CB.EN.U4CSE21001'),
                     icon: Icons.badge_outlined,
                   ),
                 ),
@@ -363,17 +412,9 @@ class _SignupScreenState extends State<SignupScreen> {
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a password';
-                    }
-                    if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
-                    }
-                    return null;
-                  },
+                  validator: FormValidators.validatePassword,
                   decoration: _inputDecoration(
-                    hint: 'Create a password',
+                    hint: 'Create a password (min. 6 chars)',
                     icon: Icons.lock_outline_rounded,
                     suffix: IconButton(
                       onPressed: () {
@@ -390,7 +431,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                 ),
 
-                // PASSWORD STRENGTH METER (WOW FEATURE)
+                // PASSWORD STRENGTH METER
                 if (_passwordController.text.isNotEmpty) ...[
                   const SizedBox(height: 8),
                   Row(
@@ -436,15 +477,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 TextFormField(
                   controller: _confirmPasswordController,
                   obscureText: _obscureConfirmPassword,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please confirm your password';
-                    }
-                    if (value != _passwordController.text) {
-                      return 'Passwords do not match';
-                    }
-                    return null;
-                  },
+                  validator: (val) => FormValidators.validateConfirmPassword(val, _passwordController.text),
                   decoration: _inputDecoration(
                     hint: 'Confirm your password',
                     icon: Icons.lock_outline_rounded,
@@ -488,9 +521,9 @@ class _SignupScreenState extends State<SignupScreen> {
                               color: Colors.white,
                             ),
                           )
-                        : const Text(
-                            'Sign Up',
-                            style: TextStyle(
+                        : Text(
+                            'Sign Up as $_selectedRole',
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
                             ),
@@ -541,11 +574,14 @@ class _SignupScreenState extends State<SignupScreen> {
     required String hint,
     required IconData icon,
     Widget? suffix,
+    String? helperText,
   }) {
     return InputDecoration(
       hintText: hint,
       prefixIcon: Icon(icon),
       suffixIcon: suffix,
+      helperText: helperText,
+      helperStyle: const TextStyle(fontSize: 11, color: Color(0xFF667085)),
       filled: true,
       fillColor: Colors.white,
       border: OutlineInputBorder(
@@ -559,6 +595,14 @@ class _SignupScreenState extends State<SignupScreen> {
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: const BorderSide(color: Color(0xFF155EEF), width: 2),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFFF04438), width: 1.5),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFFF04438), width: 2),
       ),
     );
   }

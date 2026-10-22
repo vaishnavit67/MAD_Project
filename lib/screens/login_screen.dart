@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
+import '../utils/validators.dart';
 import 'signup_screen.dart';
 import 'navigation_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final String? initialIdentity;
+
+  const LoginScreen({
+    super.key,
+    this.initialIdentity,
+  });
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -15,7 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final AuthService _authService = AuthService();
   final _formKey = GlobalKey<FormState>();
 
-  final _emailController = TextEditingController();
+  late final TextEditingController _identityController;
   final _passwordController = TextEditingController();
 
   bool _obscurePassword = true;
@@ -25,16 +30,46 @@ class _LoginScreenState extends State<LoginScreen> {
   final List<String> _roles = ['Student', 'Faculty', 'Visitor'];
 
   @override
+  void initState() {
+    super.initState();
+    _identityController = TextEditingController(text: widget.initialIdentity ?? '');
+  }
+
+  @override
   void dispose() {
-    _emailController.dispose();
+    _identityController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  String _getIdentityHint() {
+    switch (_selectedRole) {
+      case 'Visitor':
+        return 'e.g. user@gmail.com or 9876543210';
+      case 'Faculty':
+        return 'e.g. faculty@cb.amrita.edu or 9876543211';
+      case 'Student':
+      default:
+        return 'e.g. student@cb.students.amrita.edu or 9876543210';
+    }
+  }
+
+  String _getIdentityHelperText() {
+    switch (_selectedRole) {
+      case 'Visitor':
+        return 'Visitors require @gmail.com or 10-digit phone';
+      case 'Faculty':
+        return 'Faculty require @cb.amrita.edu or 10-digit phone';
+      case 'Student':
+      default:
+        return 'Students require @cb.students.amrita.edu or 10-digit phone';
+    }
   }
 
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final email = _emailController.text.trim();
+    final identity = _identityController.text.trim();
     final password = _passwordController.text;
 
     setState(() {
@@ -42,33 +77,22 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      await _authService.signInWithEmail(email: email, password: password);
+      final AuthResult result = await _authService.signInUser(
+        identity: identity,
+        password: password,
+        role: _selectedRole,
+      );
+
       if (!mounted) return;
 
-      _showMessage('Logged in successfully as $_selectedRole!');
-      _navigateToNavigation();
-    } on FirebaseAuthException catch (e) {
-      String message;
-      switch (e.code) {
-        case 'user-not-found':
-          message = 'No user account found with this email.';
-          break;
-        case 'wrong-password':
-        case 'invalid-credential':
-          message = 'Incorrect password. Please try again.';
-          break;
-        case 'invalid-email':
-          message = 'Please enter a valid email address.';
-          break;
-        default:
-          message = e.message ?? 'Authentication failed.';
-      }
-      _showMessage(message);
-    } catch (_) {
-      // Offline fallback for preview
-      if (mounted) {
-        _showMessage('Proceeding in offline mode as $_selectedRole...');
+      _showMessage(result.message, isError: !result.success);
+
+      if (result.success) {
         _navigateToNavigation();
+      }
+    } catch (e) {
+      if (mounted) {
+        _showMessage('An unexpected error occurred. Please try again.', isError: true);
       }
     } finally {
       if (mounted) {
@@ -88,10 +112,33 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void _showMessage(String message) {
+  void _showMessage(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Row(
+          children: [
+            Icon(
+              isError ? Icons.error_outline_rounded : Icons.check_circle_outline_rounded,
+              color: Colors.white,
+              size: 20,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: isError ? const Color(0xFFD92D20) : const Color(0xFF079455),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 4),
       ),
     );
   }
@@ -105,6 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
           padding: const EdgeInsets.fromLTRB(28, 30, 28, 30),
           child: Form(
             key: _formKey,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -169,7 +217,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 24),
 
-                // Campus Role Selector Bar (WOW FEATURE)
+                // Campus Role Selector Bar
                 const Text(
                   'I am a:',
                   style: TextStyle(
@@ -188,6 +236,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           setState(() {
                             _selectedRole = role;
                           });
+                          _formKey.currentState?.validate();
                         },
                         child: Container(
                           margin: const EdgeInsets.only(right: 6),
@@ -218,9 +267,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 20),
 
                 // Email / Phone Field
-                const Text(
-                  'Email or Phone',
-                  style: TextStyle(
+                Text(
+                  '$_selectedRole Email or Phone',
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF344054),
@@ -230,17 +279,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 8),
 
                 TextFormField(
-                  controller: _emailController,
+                  controller: _identityController,
                   keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter your email or phone';
-                    }
-                    return null;
-                  },
+                  validator: (value) => FormValidators.validateLoginIdentityForRole(value, _selectedRole),
                   decoration: InputDecoration(
-                    hintText: 'Enter your email or phone',
+                    hintText: _getIdentityHint(),
+                    hintStyle: const TextStyle(fontSize: 12.5, color: Color(0xFF98A2B3)),
                     prefixIcon: const Icon(Icons.person_outline_rounded),
+                    helperText: _getIdentityHelperText(),
+                    helperStyle: const TextStyle(fontSize: 11, color: Color(0xFF667085)),
                     filled: true,
                     fillColor: Colors.white,
                     border: OutlineInputBorder(
@@ -254,6 +301,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
                       borderSide: const BorderSide(color: Color(0xFF155EEF), width: 2),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: Color(0xFFF04438), width: 1.5),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: Color(0xFFF04438), width: 2),
                     ),
                   ),
                 ),
@@ -275,12 +330,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your password';
-                    }
-                    return null;
-                  },
+                  validator: FormValidators.validatePassword,
                   decoration: InputDecoration(
                     hintText: 'Enter your password',
                     prefixIcon: const Icon(Icons.lock_outline_rounded),
@@ -310,6 +360,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(14),
                       borderSide: const BorderSide(color: Color(0xFF155EEF), width: 2),
                     ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: Color(0xFFF04438), width: 1.5),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: Color(0xFFF04438), width: 2),
+                    ),
                   ),
                 ),
 
@@ -318,7 +376,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () {
-                      _showMessage('Password reset functionality available via email.');
+                      _showMessage('Password reset instructions sent if email exists.', isError: false);
                     },
                     child: const Text(
                       'Forgot Password?',
@@ -355,9 +413,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               color: Colors.white,
                             ),
                           )
-                        : const Text(
-                            'Login',
-                            style: TextStyle(
+                        : Text(
+                            'Login as $_selectedRole',
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
                             ),

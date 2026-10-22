@@ -79,23 +79,23 @@ class NavigationHistoryItem {
     };
   }
 
-  factory NavigationHistoryItem.fromMap(Map<String, dynamic> map) {
+  factory NavigationHistoryItem.fromMap(Map<dynamic, dynamic> map) {
     return NavigationHistoryItem(
-      id: map['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
-      locationName: map['locationName'] ?? '',
-      category: map['category'] ?? 'Campus Location',
-      origin: map['origin'] ?? 'My Current GPS Location',
+      id: (map['id'] ?? DateTime.now().millisecondsSinceEpoch.toString()) as String,
+      locationName: (map['locationName'] ?? '') as String,
+      category: (map['category'] ?? 'Campus Location') as String,
+      origin: (map['origin'] ?? 'My Current GPS Location') as String,
       stops: List<String>.from(map['stops'] ?? []),
       timestamp: map['timestamp'] != null
-          ? DateTime.tryParse(map['timestamp']) ?? DateTime.now()
+          ? (DateTime.tryParse(map['timestamp'] as String) ?? DateTime.now())
           : DateTime.now(),
-      distance: map['distance'] ?? '850 m',
-      walkingTime: map['walkingTime'] ?? '~10 min',
-      buildingCode: map['buildingCode'] ?? '',
-      floorCount: map['floorCount'] ?? 1,
-      isFavorite: map['isFavorite'] ?? false,
-      visitCount: map['visitCount'] ?? 1,
-      userNote: map['userNote'] ?? '',
+      distance: (map['distance'] ?? '850 m') as String,
+      walkingTime: (map['walkingTime'] ?? '~10 min') as String,
+      buildingCode: (map['buildingCode'] ?? '') as String,
+      floorCount: (map['floorCount'] ?? 1) as int,
+      isFavorite: (map['isFavorite'] ?? false) as bool,
+      visitCount: (map['visitCount'] ?? 1) as int,
+      userNote: (map['userNote'] ?? '') as String,
     );
   }
 }

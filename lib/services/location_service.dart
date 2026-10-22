@@ -1,6 +1,18 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:geolocator/geolocator.dart';
 import '../models/campus_location.dart';
 import '../utils/constants.dart';
+import 'mongodb_service.dart';
+
+enum LocationPermissionStatus {
+  granted,
+  serviceDisabled,
+  denied,
+  deniedForever,
+  error,
+}
 
 class LocationService {
   FirebaseFirestore? get _firestore {
@@ -11,26 +23,172 @@ class LocationService {
     }
   }
 
-  // Fetch campus locations from Firestore or fallback to default constants
+  /// Check detailed location permission and service status
+  Future<LocationPermissionStatus> checkLocationPermissionStatus() async {
+    try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        return LocationPermissionStatus.serviceDisabled;
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          return LocationPermissionStatus.denied;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        return LocationPermissionStatus.deniedForever;
+      }
+
+      return LocationPermissionStatus.granted;
+    } catch (_) {
+      return LocationPermissionStatus.error;
+    }
+  }
+
+  /// Open device system location settings (to turn GPS toggle ON)
+  Future<bool> openLocationSettings() async {
+    try {
+      return await Geolocator.openLocationSettings();
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Open application settings (for permanently denied permissions)
+  Future<bool> openAppSettings() async {
+    try {
+      return await Geolocator.openAppSettings();
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Request device location permissions (legacy boolean helper)
+  Future<bool> handleLocationPermission() async {
+    final status = await checkLocationPermissionStatus();
+    return status == LocationPermissionStatus.granted;
+  }
+
+  /// Get current device GPS position with cached instant fix + fused location
+  Future<Position?> getCurrentDevicePosition() async {
+    try {
+      final status = await checkLocationPermissionStatus();
+      if (status != LocationPermissionStatus.granted) return null;
+
+      // 1. Instant cached position from Android OS (< 50ms)
+      Position? cachedPosition;
+      try {
+        cachedPosition = await Geolocator.getLastKnownPosition();
+      } catch (_) {}
+
+      // 2. Fresh high-accuracy fix via Google Play Services Fused Location Provider
+      try {
+        final freshPosition = await Geolocator.getCurrentPosition(
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.high,
+            timeLimit: Duration(seconds: 10),
+          ),
+        );
+        return freshPosition;
+      } catch (_) {
+        // If fresh lock timed out or failed, fallback to cached location
+        if (cachedPosition != null) {
+          return cachedPosition;
+        }
+        return null;
+      }
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Real-time live GPS stream using high accuracy fused location provider
+  Stream<Position>? getLivePositionStream() {
+    try {
+      return Geolocator.getPositionStream(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          distanceFilter: 1, // Responsive updates every 1 meter
+        ),
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Calculate real distance between two GPS coordinates in meters
+  double calculateDistanceMeters(double startLat, double startLng, double endLat, double endLng) {
+    return Geolocator.distanceBetween(startLat, startLng, endLat, endLng);
+  }
+
+  /// Calculate initial bearing between two coordinates in degrees
+  double calculateBearing(double startLat, double startLng, double endLat, double endLng) {
+    return Geolocator.bearingBetween(startLat, startLng, endLat, endLng);
+  }
+
+  // Fetch campus locations from Backend REST API (MongoDB) or fallback to default constants
   Future<List<CampusLocation>> getLocations() async {
+    // 1. Try fetching from Node.js Express & MongoDB backend
+    try {
+      final backendUrl = MongoDbService.instance.backendUrl;
+      final uri = Uri.parse('$backendUrl/api/locations');
+      final response = await http.get(uri).timeout(const Duration(milliseconds: 2500));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final rawList = data['locations'] as List<dynamic>?;
+        if (rawList != null && rawList.isNotEmpty) {
+          return rawList.map((item) {
+            final map = item as Map<String, dynamic>;
+            return CampusLocation.fromMap(map, map['id']?.toString() ?? '');
+          }).toList();
+        }
+      }
+    } catch (_) {
+      // Backend not running or timeout; fallback
+    }
+
+    // 2. Direct Firestore fallback (legacy)
     final firestore = _firestore;
     if (firestore != null) {
       try {
         final snapshot = await firestore
             .collection('locations')
             .get()
-            .timeout(const Duration(seconds: 3));
+            .timeout(const Duration(seconds: 2));
 
         if (snapshot.docs.isNotEmpty) {
           return snapshot.docs.map((doc) {
             return CampusLocation.fromMap(doc.data(), doc.id);
           }).toList();
         }
-      } catch (_) {
-        // Fallback
-      }
+      } catch (_) {}
     }
+
+    // 3. Constant fallback
     return campusLocations;
+  }
+
+  /// Add a new campus location to MongoDB via backend REST API
+  Future<bool> addLocation(CampusLocation location) async {
+    try {
+      final backendUrl = MongoDbService.instance.backendUrl;
+      final uri = Uri.parse('$backendUrl/api/locations');
+      final response = await http
+          .post(
+            uri,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(location.toMap()),
+          )
+          .timeout(const Duration(seconds: 3));
+      return response.statusCode == 201;
+    } catch (_) {
+      return false;
+    }
   }
 
   // Filter locations with smart alias and keyword matching
