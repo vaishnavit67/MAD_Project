@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../features/notifications/models/notification_model.dart';
@@ -74,16 +75,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final unreadCount = _service.unreadCount;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.bg(context),
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.card(context),
         elevation: 0,
+        iconTheme: IconThemeData(color: AppColors.text(context)),
         title: Row(
           children: [
-            const Text(
+            Text(
               'Notifications',
               style: TextStyle(
-                color: AppColors.textPrimary,
+                color: AppColors.text(context),
                 fontWeight: FontWeight.w800,
                 fontSize: 22,
               ),
@@ -245,14 +247,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         child: Container(
           margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
           decoration: BoxDecoration(
-            color: n.isRead ? Colors.white : AppColors.featureIconBg1.withValues(alpha: 0.5),
+            color: n.isRead ? AppColors.card(context) : AppColors.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(14),
             border: !n.isRead
-                ? Border.all(color: AppColors.primary.withValues(alpha: 0.15))
-                : null,
+                ? Border.all(color: AppColors.primary.withValues(alpha: 0.25))
+                : Border.all(color: AppColors.borderCol(context)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
+                color: Colors.black.withValues(alpha: AppColors.isDark(context) ? 0.2 : 0.03),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -286,7 +288,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: n.isRead ? FontWeight.w600 : FontWeight.w800,
-                              color: AppColors.textPrimary,
+                              color: AppColors.text(context),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -297,7 +299,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           _relativeTime(n.timestamp),
                           style: TextStyle(
                             fontSize: 11,
-                            color: n.isRead ? AppColors.textSecondary : AppColors.primary,
+                            color: n.isRead ? AppColors.subtext(context) : AppColors.primary,
                             fontWeight: n.isRead ? FontWeight.w500 : FontWeight.w700,
                           ),
                         ),
@@ -308,11 +310,69 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       n.message,
                       style: TextStyle(
                         fontSize: 13,
-                        color: n.isRead ? AppColors.textSecondary : AppColors.textPrimary,
+                        color: n.isRead ? AppColors.subtext(context) : AppColors.text(context),
                         height: 1.4,
                       ),
-                      maxLines: 3,
+                      maxLines: 4,
                       overflow: TextOverflow.ellipsis,
+                    ),
+                    // In-notification Phone Copy Action
+                    Builder(
+                      builder: (ctx) {
+                        final phoneMatch = RegExp(r'(\+?\d[\d\s-]{8,}\d)').firstMatch(n.message);
+                        final phone = phoneMatch?.group(0)?.trim();
+                        if (phone == null) return const SizedBox.shrink();
+
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: InkWell(
+                            onTap: () {
+                              Clipboard.setData(ClipboardData(text: phone));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Row(
+                                    children: [
+                                      const Icon(Icons.copy_rounded, color: Colors.white, size: 16),
+                                      const SizedBox(width: 8),
+                                      Text('Copied phone number ($phone) to clipboard!'),
+                                    ],
+                                  ),
+                                  backgroundColor: AppColors.primary,
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  duration: const Duration(seconds: 2),
+                                ),
+                              );
+                            },
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.phone_rounded, size: 13, color: AppColors.primary),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    phone,
+                                    style: const TextStyle(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  const Icon(Icons.copy_rounded, size: 12, color: AppColors.primary),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -339,34 +399,37 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   IconData _iconData(String type) {
     switch (type) {
-      case 'task':     return Icons.check_circle_rounded;
-      case 'event':    return Icons.event_rounded;
-      case 'reminder': return Icons.alarm_rounded;
-      case 'message':  return Icons.message_rounded;
-      case 'system':   return Icons.notifications_rounded;
-      default:         return Icons.notifications_rounded;
+      case 'task':       return Icons.check_circle_rounded;
+      case 'event':      return Icons.event_rounded;
+      case 'reminder':   return Icons.alarm_rounded;
+      case 'message':    return Icons.message_rounded;
+      case 'lost_found': return Icons.inventory_2_rounded;
+      case 'system':     return Icons.notifications_rounded;
+      default:           return Icons.notifications_rounded;
     }
   }
 
   Color _iconColor(String type) {
     switch (type) {
-      case 'task':     return const Color(0xFF2196F3);
-      case 'event':    return AppColors.primary;
-      case 'reminder': return const Color(0xFFF57C00);
-      case 'message':  return const Color(0xFF26A69A);
-      case 'system':   return AppColors.textSecondary;
-      default:         return AppColors.primary;
+      case 'task':       return const Color(0xFF2196F3);
+      case 'event':      return AppColors.primary;
+      case 'reminder':   return const Color(0xFFF57C00);
+      case 'message':    return const Color(0xFF26A69A);
+      case 'lost_found': return const Color(0xFFD97706);
+      case 'system':     return AppColors.textSecondary;
+      default:           return AppColors.primary;
     }
   }
 
   Color _iconBgColor(String type) {
     switch (type) {
-      case 'task':     return const Color(0xFFE3F2FD);
-      case 'event':    return AppColors.featureIconBg1;
-      case 'reminder': return const Color(0xFFFFF3E0);
-      case 'message':  return const Color(0xFFE0F2F1);
-      case 'system':   return AppColors.featureIconBg1;
-      default:         return AppColors.featureIconBg1;
+      case 'task':       return const Color(0xFFE3F2FD);
+      case 'event':      return AppColors.featureIconBg1;
+      case 'reminder':   return const Color(0xFFFFF3E0);
+      case 'message':    return const Color(0xFFE0F2F1);
+      case 'lost_found': return const Color(0xFFFEF3C7);
+      case 'system':     return AppColors.featureIconBg1;
+      default:           return AppColors.featureIconBg1;
     }
   }
 

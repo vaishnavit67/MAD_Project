@@ -64,6 +64,7 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
   String _selectedCategoryFilter = 'All';
 
   void _showStepsModal(DijkstraResult dijkstraResult, CampusLocation location) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -71,10 +72,10 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
       builder: (ctx) {
         return Container(
           height: MediaQuery.of(context).size.height * 0.65,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-            boxShadow: [BoxShadow(color: Colors.black38, blurRadius: 16, offset: Offset(0, -4))],
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF0F172A) : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 16, offset: Offset(0, -4))],
           ),
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
           child: Column(
@@ -85,7 +86,7 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
+                    color: isDark ? const Color(0xFF334155) : Colors.grey.shade300,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -100,43 +101,43 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                       const SizedBox(width: 8),
                       Text(
                         'Directions to ${location.name}',
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87),
                       ),
                     ],
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close, size: 20),
+                    icon: Icon(Icons.close, size: 20, color: isDark ? Colors.white70 : Colors.black54),
                     onPressed: () => Navigator.pop(ctx),
                   ),
                 ],
               ),
-              const Divider(),
+              Divider(color: isDark ? const Color(0xFF334155) : null),
               Expanded(
                 child: ListView.separated(
                   itemCount: dijkstraResult.maneuvers.length,
-                  separatorBuilder: (context, index) => const Divider(height: 1),
+                  separatorBuilder: (context, index) => Divider(height: 1, color: isDark ? const Color(0xFF1E293B) : null),
                   itemBuilder: (context, idx) {
                     final m = dijkstraResult.maneuvers[idx];
                     final isCurrent = idx == _activeManeuverIndex;
                     return ListTile(
                       leading: CircleAvatar(
-                        backgroundColor: isCurrent ? const Color(0xFF0F9D58) : const Color(0xFFF1F5F9),
-                        child: Icon(m.icon, color: isCurrent ? Colors.white : const Color(0xFF475569), size: 20),
+                        backgroundColor: isCurrent ? const Color(0xFF0F9D58) : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)),
+                        child: Icon(m.icon, color: isCurrent ? Colors.white : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569)), size: 20),
                       ),
                       title: Text(
                         m.instruction,
                         style: TextStyle(
                           fontWeight: isCurrent ? FontWeight.bold : FontWeight.w500,
-                          color: isCurrent ? const Color(0xFF0F9D58) : Colors.black87,
+                          color: isCurrent ? const Color(0xFF0F9D58) : (isDark ? Colors.white : Colors.black87),
                         ),
                       ),
                       subtitle: Text(
                         m.roadName,
-                        style: const TextStyle(fontSize: 12, color: Colors.black54),
+                        style: TextStyle(fontSize: 12, color: isDark ? const Color(0xFF94A3B8) : Colors.black54),
                       ),
                       trailing: Text(
                         '${m.distanceMeters.round()} m',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: isDark ? Colors.white : Colors.black87),
                       ),
                       onTap: () {
                         Navigator.pop(ctx);
@@ -809,8 +810,10 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
   }
 
   void _showLayerSelectionModal() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showModalBottomSheet(
       context: context,
+      backgroundColor: isDark ? const Color(0xFF0F172A) : Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -827,12 +830,12 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
+                      Text(
                         'Map Cartography & Layers',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF0F172A)),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close_rounded, size: 20, color: Color(0xFF64748B)),
+                        icon: Icon(Icons.close_rounded, size: 20, color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
                         tooltip: 'Close',
                         onPressed: () => Navigator.pop(ctx),
                       ),
@@ -843,7 +846,7 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                 Expanded(
                   child: ListView.separated(
                     itemCount: MapConfigService.instance.availableStyles.length,
-                    separatorBuilder: (_, _) => const Divider(height: 1, indent: 64),
+                    separatorBuilder: (_, _) => Divider(height: 1, indent: 64, color: isDark ? const Color(0xFF1E293B) : null),
                     itemBuilder: (context, idx) {
                       final style = MapConfigService.instance.availableStyles[idx];
                       final isSelected = MapConfigService.instance.selectedStyleIndex == idx;
@@ -853,13 +856,13 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? const Color(0xFF155EEF).withValues(alpha: 0.12)
-                                : const Color(0xFFF1F5F9),
+                                ? const Color(0xFF155EEF).withValues(alpha: 0.2)
+                                : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
                             style.icon,
-                            color: isSelected ? const Color(0xFF155EEF) : const Color(0xFF64748B),
+                            color: isSelected ? const Color(0xFF38BDF8) : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
                             size: 22,
                           ),
                         ),
@@ -867,16 +870,16 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                           style.name,
                           style: TextStyle(
                             fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                            color: isSelected ? const Color(0xFF155EEF) : const Color(0xFF1E293B),
+                            color: isSelected ? const Color(0xFF38BDF8) : (isDark ? Colors.white : const Color(0xFF1E293B)),
                             fontSize: 14,
                           ),
                         ),
                         subtitle: Text(
                           style.subtitle,
-                          style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                          style: TextStyle(fontSize: 11, color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
                         ),
                         trailing: isSelected
-                            ? const Icon(Icons.check_circle_rounded, color: Color(0xFF155EEF), size: 20)
+                            ? const Icon(Icons.check_circle_rounded, color: Color(0xFF38BDF8), size: 20)
                             : null,
                         onTap: () {
                           MapConfigService.instance.selectStyle(idx);
@@ -917,11 +920,13 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
       note: 'Dijkstra route to ${location.name} completed successfully',
     );
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) {
         return Dialog(
+          backgroundColor: isDark ? const Color(0xFF0F172A) : Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           child: Stack(
             clipBehavior: Clip.none,
@@ -934,8 +939,8 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                     Container(
                       width: 72,
                       height: 72,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFDCFCE7),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF064E3B) : const Color(0xFFDCFCE7),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -945,28 +950,28 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                       ),
                     ),
                     const SizedBox(height: 18),
-                    const Text(
+                    Text(
                       'Destination Reached! 🎓',
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF101828),
+                        color: isDark ? Colors.white : const Color(0xFF101828),
                       ),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       'You have arrived at ${location.name}\nAmrita Vishwa Vidyapeetham, Coimbatore',
                       textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 13, color: Colors.black54),
+                      style: TextStyle(fontSize: 13, color: isDark ? const Color(0xFF94A3B8) : Colors.black54),
                     ),
                     const SizedBox(height: 20),
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
+                        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFE4E7EC)),
+                        border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE4E7EC)),
                       ),
                       child: Column(
                         children: [
@@ -975,35 +980,35 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                             children: [
                               Column(
                                 children: [
-                                  const Icon(Icons.straighten, color: Color(0xFF155EEF), size: 22),
+                                  const Icon(Icons.straighten, color: Color(0xFF38BDF8), size: 22),
                                   const SizedBox(height: 4),
                                   Text(
                                     distKmStr,
-                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: isDark ? Colors.white : Colors.black87),
                                   ),
-                                  const Text('Dijkstra Distance', style: TextStyle(fontSize: 11, color: Colors.black54)),
+                                  Text('Dijkstra Distance', style: TextStyle(fontSize: 11, color: isDark ? const Color(0xFF94A3B8) : Colors.black54)),
                                 ],
                               ),
-                              Container(width: 1, height: 35, color: const Color(0xFFE4E7EC)),
+                              Container(width: 1, height: 35, color: isDark ? const Color(0xFF334155) : const Color(0xFFE4E7EC)),
                               Column(
                                 children: [
                                   const Icon(Icons.timer_outlined, color: Color(0xFF10B981), size: 22),
                                   const SizedBox(height: 4),
                                   Text(
                                     location.walkingTime,
-                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: isDark ? Colors.white : Colors.black87),
                                   ),
-                                  const Text('Walking Time', style: TextStyle(fontSize: 11, color: Colors.black54)),
+                                  Text('Walking Time', style: TextStyle(fontSize: 11, color: isDark ? const Color(0xFF94A3B8) : Colors.black54)),
                                 ],
                               ),
                             ],
                           ),
                           const SizedBox(height: 12),
-                          const Divider(height: 1),
+                          Divider(height: 1, color: isDark ? const Color(0xFF334155) : null),
                           const SizedBox(height: 10),
                           Text(
                             'Route: $origin ➔ ${location.name}',
-                            style: const TextStyle(fontSize: 11, color: Colors.black54, fontWeight: FontWeight.w500),
+                            style: TextStyle(fontSize: 11, color: isDark ? const Color(0xFF94A3B8) : Colors.black54, fontWeight: FontWeight.w500),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -1011,7 +1016,7 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                             const SizedBox(height: 4),
                             Text(
                               'GPS: ${location.latitude!.toStringAsFixed(5)}° N, ${location.longitude!.toStringAsFixed(5)}° E',
-                              style: const TextStyle(fontSize: 10, color: Colors.black45),
+                              style: TextStyle(fontSize: 10, color: isDark ? const Color(0xFF64748B) : Colors.black45),
                             ),
                           ],
                         ],
@@ -1287,6 +1292,7 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
             width: 18,
             height: 18,
             alignment: Alignment.center,
+            rotate: true,
             child: Transform.rotate(
               angle: bearing * math.pi / 180.0,
               child: const _RouteChevronArrow(),
@@ -1466,7 +1472,16 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
 
     if (_isLiveGpsMode && _currentDevicePosition != null) {
       userMarkerPosition = LatLng(_currentDevicePosition!.latitude, _currentDevicePosition!.longitude);
-      userHeading = _currentDevicePosition!.heading;
+      final rawHeading = _currentDevicePosition!.heading;
+      if (rawHeading != 0.0 && !rawHeading.isNaN) {
+        userHeading = rawHeading;
+      } else if (currentManeuver != null) {
+        userHeading = DijkstraPathFinding.calculateBearing(userMarkerPosition, currentManeuver.point);
+      } else if (routePoints.length >= 2) {
+        userHeading = DijkstraPathFinding.calculateBearing(routePoints[0], routePoints[1]);
+      } else {
+        userHeading = 0.0;
+      }
       if (currentManeuver != null) {
         distanceToNextTurn = const Distance().as(LengthUnit.Meter, userMarkerPosition, currentManeuver.point).round();
       }
@@ -1485,7 +1500,14 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
       }
     }
 
-    final activeStyle = MapConfigService.instance.currentStyle;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final baseStyle = MapConfigService.instance.currentStyle;
+    final activeStyle = isDark && baseStyle.id == 'esri_imagery'
+        ? MapConfigService.instance.availableStyles.firstWhere(
+            (s) => s.id == 'carto_dark',
+            orElse: () => baseStyle,
+          )
+        : baseStyle;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
@@ -1804,6 +1826,7 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                           options: MapOptions(
                             initialCenter: const LatLng(amritaCampusCenterLat, amritaCampusCenterLng),
                             initialZoom: 16.8,
+                            initialRotation: _isHeadingUp ? -userHeading : 0.0,
                             minZoom: activeStyle.minZoom,
                             maxZoom: activeStyle.maxZoom,
                             initialCameraFit: routePoints.length > 1
@@ -1825,6 +1848,9 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                               setState(() {
                                 _isMapReady = true;
                               });
+                              if (_isHeadingUp && userHeading != 0.0) {
+                                _safeMoveCamera(userMarkerPosition, 18.0, rotation: -userHeading);
+                              }
                             },
                           ),
                         children: [
@@ -2040,6 +2066,7 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                                 point: userMarkerPosition,
                                 width: 56,
                                 height: 56,
+                                rotate: true,
                                 child: _WalkerAvatar(
                                   heading: userHeading,
                                   isLiveGps: _isLiveGpsMode,
@@ -2126,22 +2153,22 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.95),
+                              color: isDark ? const Color(0xFF1E293B) : Colors.white.withValues(alpha: 0.95),
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: const Color(0xFFDADCE0)),
+                              border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFDADCE0)),
                               boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(activeStyle.icon, size: 14, color: const Color(0xFF155EEF)),
+                                Icon(activeStyle.icon, size: 14, color: const Color(0xFF38BDF8)),
                                 const SizedBox(width: 6),
                                 Text(
                                   activeStyle.name,
-                                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF334155)),
+                                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF334155)),
                                 ),
                                 const SizedBox(width: 4),
-                                const Icon(Icons.arrow_drop_down, size: 14, color: Color(0xFF64748B)),
+                                Icon(Icons.arrow_drop_down, size: 14, color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
                               ],
                             ),
                           ),
@@ -2154,10 +2181,10 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.95),
+                              color: isDark ? const Color(0xFF1E293B) : Colors.white.withValues(alpha: 0.95),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                color: _showPoiMarkers ? const Color(0xFF2563EB) : const Color(0xFFDADCE0),
+                                color: _showPoiMarkers ? const Color(0xFF38BDF8) : (isDark ? const Color(0xFF334155) : const Color(0xFFDADCE0)),
                               ),
                               boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
                             ),
@@ -2167,7 +2194,7 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                                 Icon(
                                   _showPoiMarkers ? Icons.place_rounded : Icons.place_outlined,
                                   size: 13,
-                                  color: _showPoiMarkers ? const Color(0xFF2563EB) : const Color(0xFF64748B),
+                                  color: _showPoiMarkers ? const Color(0xFF38BDF8) : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
                                 ),
                                 const SizedBox(width: 5),
                                 Text(
@@ -2175,7 +2202,7 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
-                                    color: _showPoiMarkers ? const Color(0xFF2563EB) : const Color(0xFF64748B),
+                                    color: _showPoiMarkers ? const Color(0xFF38BDF8) : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
                                   ),
                                 ),
                               ],
@@ -2213,10 +2240,11 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
 
             // GOOGLE MAPS NAVIGATION BOTTOM SHEET
             Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                boxShadow: [
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF0F172A) : Colors.white,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                border: Border(top: BorderSide(color: isDark ? const Color(0xFF1E293B) : Colors.transparent)),
+                boxShadow: const [
                   BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, -3)),
                 ],
               ),
@@ -2230,7 +2258,7 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                       width: 36,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade300,
+                        color: isDark ? const Color(0xFF334155) : Colors.grey.shade300,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -2249,13 +2277,13 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 8),
                             decoration: BoxDecoration(
-                              color: !_isLiveGpsMode ? const Color(0xFF0F9D58) : const Color(0xFFF1F5F9),
+                              color: !_isLiveGpsMode ? const Color(0xFF0F9D58) : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.directions_walk_rounded, size: 16, color: !_isLiveGpsMode ? Colors.white : Colors.black54),
+                                Icon(Icons.directions_walk_rounded, size: 16, color: !_isLiveGpsMode ? Colors.white : (isDark ? Colors.white70 : Colors.black54)),
                                 const SizedBox(width: 6),
                                 Flexible(
                                   child: Text(
@@ -2263,7 +2291,7 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                                     style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.bold,
-                                      color: !_isLiveGpsMode ? Colors.white : Colors.black87,
+                                      color: !_isLiveGpsMode ? Colors.white : (isDark ? Colors.white : Colors.black87),
                                     ),
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -2283,7 +2311,7 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 8),
                             decoration: BoxDecoration(
-                              color: _isLiveGpsMode ? const Color(0xFF0F9D58) : const Color(0xFFF1F5F9),
+                              color: _isLiveGpsMode ? const Color(0xFF0F9D58) : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Row(
@@ -2292,7 +2320,7 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                                 if (_isGpsLoading)
                                   const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                                 else
-                                  Icon(Icons.gps_fixed_rounded, size: 16, color: _isLiveGpsMode ? Colors.white : Colors.black54),
+                                  Icon(Icons.gps_fixed_rounded, size: 16, color: _isLiveGpsMode ? Colors.white : (isDark ? Colors.white70 : Colors.black54)),
                                 const SizedBox(width: 6),
                                 Flexible(
                                   child: Text(
@@ -2300,7 +2328,7 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                                     style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.bold,
-                                      color: _isLiveGpsMode ? Colors.white : Colors.black87,
+                                      color: _isLiveGpsMode ? Colors.white : (isDark ? Colors.white : Colors.black87),
                                     ),
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -2338,9 +2366,9 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                                 Expanded(
                                   child: Text(
                                     '• $remainingMeters m • ${_calculateEta(dijkstraResult.totalDistanceMeters)}',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 14,
-                                      color: Color(0xFF5F6368),
+                                      color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF5F6368),
                                       fontWeight: FontWeight.w600,
                                     ),
                                     maxLines: 1,
@@ -2351,7 +2379,7 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                             ),
                             Text(
                               'To ${location.name} • ${_isLiveGpsMode ? "Live GPS" : "Simulation"}',
-                              style: const TextStyle(fontSize: 11, color: Color(0xFF70757A), fontWeight: FontWeight.w500),
+                              style: TextStyle(fontSize: 11, color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF70757A), fontWeight: FontWeight.w500),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -2409,14 +2437,14 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                         OutlinedButton(
                           onPressed: _cycleSimSpeed,
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Color(0xFFCBD5E1)),
+                            side: BorderSide(color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1)),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                             minimumSize: const Size(44, 36),
                           ),
                           child: Text(
                             '${_simSpeed}x',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF1E293B)),
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: isDark ? Colors.white : const Color(0xFF1E293B)),
                           ),
                         ),
                         const Spacer(),
@@ -2425,8 +2453,8 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                           icon: const Icon(Icons.format_list_bulleted_rounded, size: 16),
                           label: const Text('Steps', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFF3C4043),
-                            side: const BorderSide(color: Color(0xFFDADCE0)),
+                            foregroundColor: isDark ? Colors.white : const Color(0xFF3C4043),
+                            side: BorderSide(color: isDark ? const Color(0xFF334155) : const Color(0xFFDADCE0)),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                             minimumSize: const Size(70, 36),
@@ -2452,7 +2480,7 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
                               overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
                               activeTrackColor: const Color(0xFF0F9D58),
-                              inactiveTrackColor: const Color(0xFFE2E8F0),
+                              inactiveTrackColor: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
                               thumbColor: const Color(0xFF0F9D58),
                             ),
                             child: Slider(
@@ -2523,8 +2551,8 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                           icon: const Icon(Icons.format_list_bulleted_rounded, size: 16),
                           label: const Text('Steps', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFF3C4043),
-                            side: const BorderSide(color: Color(0xFFDADCE0)),
+                            foregroundColor: isDark ? Colors.white : const Color(0xFF3C4043),
+                            side: BorderSide(color: isDark ? const Color(0xFF334155) : const Color(0xFFDADCE0)),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                             minimumSize: const Size(70, 36),
@@ -2536,7 +2564,7 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
+                        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
@@ -2555,7 +2583,7 @@ class _MapScreenState extends State<MapScreen> with SingleTickerProviderStateMix
                               _currentDevicePosition != null
                                   ? 'Live GPS • ${_currentDevicePosition!.latitude.toStringAsFixed(4)}°, ${_currentDevicePosition!.longitude.toStringAsFixed(4)}° (±${_currentDevicePosition!.accuracy.toStringAsFixed(0)}m)'
                                   : 'Connecting to GPS Satellites...',
-                              style: const TextStyle(fontSize: 11, color: Colors.black87, fontWeight: FontWeight.w600),
+                              style: TextStyle(fontSize: 11, color: isDark ? Colors.white70 : Colors.black87, fontWeight: FontWeight.w600),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -2604,15 +2632,16 @@ class _MapFloatingButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.95),
+        color: isDark ? const Color(0xFF1E293B) : Colors.white.withValues(alpha: 0.95),
         shape: BoxShape.circle,
-        border: Border.all(color: const Color(0xFFDADCE0)),
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))],
+        border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFDADCE0)),
+        boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))],
       ),
       child: IconButton(
-        icon: Icon(icon, color: color ?? const Color(0xFF155EEF), size: 20),
+        icon: Icon(icon, color: color ?? (isDark ? const Color(0xFF38BDF8) : const Color(0xFF155EEF)), size: 20),
         tooltip: tooltip,
         onPressed: onPressed,
         constraints: const BoxConstraints(minWidth: 38, minHeight: 38),
@@ -2637,7 +2666,9 @@ class _WalkerAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final safeHeading = heading.isNaN ? 0.0 : heading;
     final primaryColor = isLiveGps ? const Color(0xFF10B981) : const Color(0xFF155EEF);
-    final displayAngle = isHeadingUp ? 0.0 : (safeHeading * math.pi / 180.0);
+    // When rotate: true is on the Marker, the marker rotates with the map canvas.
+    // The bearing angle safeHeading aligns the arrow forward along the travel direction.
+    final displayAngle = safeHeading * math.pi / 180.0;
 
     return Transform.rotate(
       angle: displayAngle,

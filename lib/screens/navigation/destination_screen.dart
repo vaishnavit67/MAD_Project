@@ -80,7 +80,7 @@ class _DestinationScreenState extends State<DestinationScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.bg(context),
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
@@ -142,11 +142,11 @@ class _DestinationScreenState extends State<DestinationScreen> {
                   // Quick info row
                   Row(
                     children: [
-                      _infoChip(Icons.straighten_rounded, location.distance, color),
+                      _infoChip(context, Icons.straighten_rounded, location.distance, color),
                       const SizedBox(width: 10),
-                      _infoChip(Icons.schedule_rounded, location.walkingTime, color),
+                      _infoChip(context, Icons.schedule_rounded, location.walkingTime, color),
                       const SizedBox(width: 10),
-                      _infoChip(Icons.layers_rounded, '${location.floorCount} Floor${location.floorCount > 1 ? 's' : ''}', color),
+                      _infoChip(context, Icons.layers_rounded, '${location.floorCount} Floor${location.floorCount > 1 ? 's' : ''}', color),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -168,31 +168,32 @@ class _DestinationScreenState extends State<DestinationScreen> {
                   const SizedBox(height: 20),
 
                   // Description
-                  const Text('About', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+                  Text('About', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.text(context))),
                   const SizedBox(height: 8),
                   Text(
                     location.description.isNotEmpty ? location.description : 'Campus location in $category area.',
-                    style: const TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.6),
+                    style: TextStyle(fontSize: 14, color: AppColors.subtext(context), height: 1.6),
                   ),
                   const SizedBox(height: 20),
-                  const Divider(),
+                  Divider(color: AppColors.brd(context)),
                   const SizedBox(height: 16),
 
                   // Route info
-                  const Text('Route Info', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+                  Text('Route Info', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.text(context))),
                   const SizedBox(height: 10),
-                  _routeRow(Icons.my_location_rounded, 'From', origin, AppColors.success),
+                  _routeRow(context, Icons.my_location_rounded, 'From', origin, AppColors.success),
                   if (stops.isNotEmpty)
-                    _routeRow(Icons.flag_rounded, 'Via', stops.join(' → '), const Color(0xFFF57C00)),
-                  _routeRow(Icons.place_rounded, 'To', name, AppColors.error),
+                    _routeRow(context, Icons.flag_rounded, 'Via', stops.join(' → '), const Color(0xFFF57C00)),
+                  _routeRow(context, Icons.place_rounded, 'To', name, AppColors.error),
                   const SizedBox(height: 10),
 
                   // Checkpoints summary
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: AppColors.card(context),
                       borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: AppColors.brd(context)),
                       boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 3))],
                     ),
                     child: Row(
@@ -202,7 +203,7 @@ class _DestinationScreenState extends State<DestinationScreen> {
                         Expanded(
                           child: Text(
                             '${routeCheckpoints.length} checkpoints • ${location.distance} total',
-                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.text(context)),
                           ),
                         ),
                       ],
@@ -251,10 +252,10 @@ class _DestinationScreenState extends State<DestinationScreen> {
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: () => Navigator.pushNamed(context, '/history'),
-                          icon: const Icon(Icons.history_rounded, size: 18, color: AppColors.textSecondary),
-                          label: const Text('History & Notes', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textSecondary)),
+                          icon: Icon(Icons.history_rounded, size: 18, color: AppColors.subtext(context)),
+                          label: Text('History & Notes', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.subtext(context))),
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: AppColors.border),
+                            side: BorderSide(color: AppColors.brd(context)),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
@@ -272,36 +273,37 @@ class _DestinationScreenState extends State<DestinationScreen> {
     );
   }
 
-  Widget _infoChip(IconData icon, String text, Color color) {
+  Widget _infoChip(BuildContext context, IconData icon, String text, Color color) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.card(context),
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.brd(context)),
           boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 6, offset: const Offset(0, 2))],
         ),
         child: Column(
           children: [
             Icon(icon, size: 18, color: color),
             const SizedBox(height: 4),
-            Text(text, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+            Text(text, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.text(context))),
           ],
         ),
       ),
     );
   }
 
-  Widget _routeRow(IconData icon, String label, String value, Color color) {
+  Widget _routeRow(BuildContext context, IconData icon, String label, String value, Color color) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         children: [
           Icon(icon, size: 18, color: color),
           const SizedBox(width: 10),
-          Text('$label: ', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textSecondary)),
+          Text('$label: ', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.subtext(context))),
           Expanded(
-            child: Text(value, style: const TextStyle(fontSize: 13, color: AppColors.textPrimary, fontWeight: FontWeight.w600), maxLines: 1, overflow: TextOverflow.ellipsis),
+            child: Text(value, style: TextStyle(fontSize: 13, color: AppColors.text(context), fontWeight: FontWeight.w600), maxLines: 1, overflow: TextOverflow.ellipsis),
           ),
         ],
       ),
@@ -320,11 +322,14 @@ class _DestinationScreenState extends State<DestinationScreen> {
           builder: (ctx, setModalState) {
             return Container(
               height: MediaQuery.of(ctx).size.height * 0.75,
-              decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+              decoration: BoxDecoration(
+                color: AppColors.card(ctx),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              ),
               child: Column(
                 children: [
                   const SizedBox(height: 12),
-                  Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.border, borderRadius: BorderRadius.circular(2))),
+                  Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.brd(ctx), borderRadius: BorderRadius.circular(2))),
                   const SizedBox(height: 16),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -340,21 +345,21 @@ class _DestinationScreenState extends State<DestinationScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('Guidance Preview', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
-                              Text('${checkpoints.length} checkpoints • ${location.distance}', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                              Text('Guidance Preview', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.text(ctx))),
+                              Text('${checkpoints.length} checkpoints • ${location.distance}', style: TextStyle(fontSize: 12, color: AppColors.subtext(ctx))),
                             ],
                           ),
                         ),
                         IconButton(
                           tooltip: 'Toggle Voice Prompts',
-                          icon: Icon(isAudioOn ? Icons.volume_up_rounded : Icons.volume_off_rounded, color: isAudioOn ? color : AppColors.textSecondary),
+                          icon: Icon(isAudioOn ? Icons.volume_up_rounded : Icons.volume_off_rounded, color: isAudioOn ? color : AppColors.subtext(ctx)),
                           onPressed: () => setModalState(() => isAudioOn = !isAudioOn),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const Divider(height: 1),
+                  Divider(height: 1, color: AppColors.brd(ctx)),
                   Expanded(
                     child: ListView.separated(
                       padding: const EdgeInsets.all(20),
@@ -366,9 +371,9 @@ class _DestinationScreenState extends State<DestinationScreen> {
                         return Container(
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
-                            color: AppColors.background,
+                            color: AppColors.bg(ctx),
                             borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: cp.isStop ? const Color(0xFFF59E0B) : AppColors.border),
+                            border: Border.all(color: cp.isStop ? const Color(0xFFF59E0B) : AppColors.brd(ctx)),
                           ),
                           child: Row(
                             children: [
@@ -385,9 +390,9 @@ class _DestinationScreenState extends State<DestinationScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(cp.title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+                                    Text(cp.title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.text(ctx))),
                                     const SizedBox(height: 2),
-                                    Text(cp.instruction, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                                    Text(cp.instruction, style: TextStyle(fontSize: 12, color: AppColors.subtext(ctx))),
                                   ],
                                 ),
                               ),

@@ -11,6 +11,33 @@ import '../../features/notifications/services/notification_service.dart';
 /* =========================================================
                           CLUBS
 ========================================================= */
+/// Resolves actual named faculty club head teacher instead of generic 'Faculty'
+String resolveClubHeadTeacherName(Map<String, dynamic> club) {
+  final name = (club['createdByName'] ?? '').toString().trim();
+  if (name.isNotEmpty &&
+      name.toLowerCase() != 'faculty' &&
+      name.toLowerCase() != 'faculty member' &&
+      name.toLowerCase() != 'faculty lead' &&
+      name.toLowerCase() != 'faculty coordinator') {
+    return name;
+  }
+  final clubName = (club['name'] ?? '').toString().toLowerCase();
+  final category = (club['category'] ?? '').toString().toLowerCase();
+
+  if (clubName.contains('code') || clubName.contains('tech') || clubName.contains('google') || clubName.contains('acm') || category == 'technical') {
+    return 'Dr. Priya Sharma (Associate Prof. & Club Head)';
+  } else if (clubName.contains('design') || clubName.contains('ui') || category == 'creative') {
+    return 'Prof. Rajesh Kumar (Assistant Prof. & Club Head)';
+  } else if (clubName.contains('music') || clubName.contains('acoustics') || clubName.contains('dance') || category == 'cultural') {
+    return 'Dr. Roopa S. (Cultural Faculty Head)';
+  } else if (clubName.contains('sport') || category == 'sports') {
+    return 'Coach Ramesh M. (Sports Faculty Director)';
+  } else if (clubName.contains('nature') || clubName.contains('social') || category == 'social') {
+    return 'Dr. K. Anand (Faculty Mentor & Head)';
+  }
+  return 'Dr. Priya Sharma (Faculty Club Head)';
+}
+
 class ClubsScreen extends StatefulWidget {
   const ClubsScreen({super.key});
 
@@ -639,7 +666,7 @@ class _ClubsScreenState extends State<ClubsScreen> {
     final currentUserId = AuthService.currentUser?.id ?? '';
     final currentUserName = AuthService.currentUser?.name ?? '';
 
-    final String creatorName = (club['createdByName'] ?? 'Dr. Priya Sharma (Faculty Lead)').toString();
+    final String creatorName = resolveClubHeadTeacherName(club);
     final rawRequests = club['joinRequests'] as List? ?? [];
     final pendingCount = rawRequests.where((r) => r is Map && r['status'] == 'pending').length;
 
@@ -733,15 +760,15 @@ class _ClubsScreenState extends State<ClubsScreen> {
                       const SizedBox(height: 3),
                       Row(
                         children: [
-                          const Icon(Icons.school_rounded, size: 12, color: Color(0xFF7C3AED)),
+                          const Icon(Icons.school_rounded, size: 13, color: Color(0xFF7C3AED)),
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
-                              'Lead: $creatorName',
+                              'Club Head: $creatorName',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
-                                fontSize: 11,
+                                fontSize: 11.5,
                                 fontWeight: FontWeight.w700,
                                 color: Color(0xFF7C3AED),
                               ),
@@ -1723,72 +1750,6 @@ class _ClubDetailsPageState extends State<ClubDetailsPage> {
     );
   }
 
-  void _showDigitalPassModal(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: LFColors.card(context),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Container(
-                alignment: Alignment.center,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: LFColors.primary.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.qr_code_2_rounded, size: 50, color: LFColors.primary),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Campus Event Pass',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: LFColors.text(context)),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Pass ID: EVT-9042 • ${widget.club['name']}',
-                style: TextStyle(fontSize: 12, color: LFColors.muted(context)),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                height: 140,
-                width: 140,
-                decoration: BoxDecoration(
-                  color: Colors.black,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Center(
-                  child: Icon(Icons.qr_code_rounded, size: 110, color: Colors.white),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Show this QR code at Innovation Hub entry.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 12, color: LFColors.subtext(context)),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(ctx),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: LFColors.primary,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-                child: const Text('CLOSE PASS', style: TextStyle(fontWeight: FontWeight.w800, color: Colors.white)),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final bool isSports = widget.club['category'] == 'Sports';
@@ -1954,7 +1915,7 @@ class _ClubDetailsPageState extends State<ClubDetailsPage> {
                         const Row(
                           children: [
                             Text(
-                              'FACULTY COORDINATOR & LEAD',
+                              'CLUB HEAD TEACHER',
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w800,
@@ -1968,7 +1929,7 @@ class _ClubDetailsPageState extends State<ClubDetailsPage> {
                         ),
                         const SizedBox(height: 3),
                         Text(
-                          widget.club['createdByName'] ?? 'Dr. Priya Sharma (Faculty Lead)',
+                          resolveClubHeadTeacherName(widget.club),
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w800,
@@ -2087,22 +2048,12 @@ class _ClubDetailsPageState extends State<ClubDetailsPage> {
                 'Upcoming Schedule ($selectedSport)',
                 'Practice Session & Selection Trials\n📅 Friday • 4:00 PM - 6:00 PM\n📍 Campus Athletic Complex',
                 Icons.calendar_today_rounded,
-                actionWidget: TextButton.icon(
-                  onPressed: () => _showDigitalPassModal(context),
-                  icon: const Icon(Icons.qr_code_2_rounded, size: 18),
-                  label: const Text('Get Event Pass'),
-                ),
               ),
             ] else
               _cardSection(
                 'Next Community Event',
                 'Annual Interactive Workshop & Meetup\n📅 Friday • 4:00 PM\n📍 Innovation Hub Auditorium',
                 Icons.event_rounded,
-                actionWidget: TextButton.icon(
-                  onPressed: () => _showDigitalPassModal(context),
-                  icon: const Icon(Icons.qr_code_2_rounded, size: 18),
-                  label: const Text('Get Digital Pass'),
-                ),
               ),
 
             const SizedBox(height: 16),

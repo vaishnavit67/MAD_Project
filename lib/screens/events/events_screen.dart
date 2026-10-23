@@ -1,6 +1,7 @@
 import 'dart:io' as io;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/constants/app_colors.dart';
@@ -191,6 +192,139 @@ class _EventsScreenState extends State<EventsScreen>
       MaterialPageRoute(builder: (_) => EventDetailPage(event: event)),
     );
     setState(() {}); // refresh registration state after returning
+  }
+
+  void _showScanOrJoinDialog(BuildContext context) {
+    final codeCtrl = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) => Container(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(sheetCtx).viewInsets.bottom + 20,
+          top: 24,
+          left: 20,
+          right: 20,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.card(sheetCtx),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.qr_code_scanner_rounded, color: AppColors.primary, size: 24),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Scan & Join Campus Event',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.text(context),
+                        ),
+                      ),
+                      Text(
+                        'Scan QR from Teacher screen or paste link',
+                        style: TextStyle(fontSize: 12, color: AppColors.subtext(context)),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close_rounded),
+                  onPressed: () => Navigator.pop(sheetCtx),
+                ),
+              ],
+            ),
+            const SizedBox(height: 18),
+            TextField(
+              controller: codeCtrl,
+              style: TextStyle(color: AppColors.text(context)),
+              decoration: InputDecoration(
+                hintText: 'Paste event link or code (campusconnect://...)',
+                hintStyle: TextStyle(color: AppColors.subtext(context), fontSize: 13),
+                filled: true,
+                fillColor: AppColors.bg(context),
+                prefixIcon: const Icon(Icons.link_rounded, color: AppColors.primary),
+                suffixIcon: IconButton(
+                  tooltip: 'Paste from clipboard',
+                  icon: const Icon(Icons.content_paste_rounded, color: AppColors.primary),
+                  onPressed: () async {
+                    final data = await Clipboard.getData('text/plain');
+                    if (data?.text?.isNotEmpty == true) {
+                      codeCtrl.text = data!.text!.trim();
+                    }
+                  },
+                ),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () {
+                final text = codeCtrl.text.trim();
+                Event? match;
+                if (text.isNotEmpty) {
+                  final uri = Uri.tryParse(text);
+                  final idFromQuery = uri?.queryParameters['id'] ?? text;
+                  match = _eventsList.firstWhere(
+                    (e) => e.id.toLowerCase() == idFromQuery.toLowerCase() ||
+                           e.title.toLowerCase().contains(text.toLowerCase()),
+                    orElse: () => _eventsList.first,
+                  );
+                } else if (_eventsList.isNotEmpty) {
+                  match = _eventsList.first;
+                }
+
+                if (match != null) {
+                  Navigator.pop(sheetCtx);
+                  _openEvent(match);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('No matching campus event found for this code.')),
+                  );
+                }
+              },
+              icon: const Icon(Icons.event_available_rounded, size: 18),
+              label: const Text('VIEW & JOIN EVENT', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _showCreateEventDialog(BuildContext context) async {
@@ -555,6 +689,11 @@ class _EventsScreenState extends State<EventsScreen>
           style: TextStyle(color: AppColors.text(context), fontWeight: FontWeight.w800, fontSize: 22),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.qr_code_scanner_rounded, color: AppColors.primary),
+            tooltip: 'Scan / Join Event with QR Code',
+            onPressed: () => _showScanOrJoinDialog(context),
+          ),
           if (isFaculty)
             IconButton(
               icon: const Icon(Icons.add_circle_outline_rounded, color: AppColors.primary),

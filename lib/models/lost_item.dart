@@ -11,6 +11,8 @@ class LostItem {
   final String ownerName;
   final String status; // 'active', 'claimed', 'resolved', 'Lost', 'Found'
   final DateTime? date;
+  final String phone;
+  final Map<String, dynamic>? rawJson;
 
   LostItem({
     required this.id,
@@ -25,6 +27,8 @@ class LostItem {
     this.ownerName = '',
     this.status = 'active',
     this.date,
+    this.phone = '',
+    this.rawJson,
   });
 
   // Backward-compatibility aliases
@@ -64,6 +68,8 @@ class LostItem {
       ownerName: json['ownerName'] ?? '',
       status: json['status'] ?? 'active',
       date: parsedDate,
+      phone: (json['phone'] ?? json['contactPhone'] ?? '').toString(),
+      rawJson: json,
     );
   }
 

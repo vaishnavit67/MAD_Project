@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io' as io;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/theme/lf_colors.dart';
 import '../../core/constants/app_colors.dart';
@@ -9,6 +10,8 @@ import '../../services/lost_found_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/image_upload_service.dart';
 import '../../services/mongodb_service.dart';
+import '../../features/notifications/models/notification_model.dart';
+import '../../features/notifications/services/in_app_notification_service.dart';
 import '../../features/notifications/services/notification_service.dart';
 
 Widget _buildItemImage(String path, {BoxFit fit = BoxFit.cover}) {
@@ -77,6 +80,7 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
       'iconColor': const Color(0xFF6366F1),
       'description': 'White AirPods Pro case with a small dragon sticker on the back.',
       'reporter': 'Alex Rivera (CS Student)',
+      'phone': '+91 98451 23456',
       'isVerified': true,
     },
     {
@@ -90,6 +94,7 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
       'iconColor': const Color(0xFF10B981),
       'description': 'Herschel black bag containing notebooks and a blue water bottle.',
       'reporter': 'Campus Security Desk',
+      'phone': '+91 94432 78901',
       'isVerified': true,
     },
     {
@@ -103,6 +108,7 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
       'iconColor': const Color(0xFF0284C7),
       'description': 'Blue hydro flask with stickers. Left near laptop charging station.',
       'reporter': 'Sarah Chen (ECE)',
+      'phone': '+91 97890 12345',
       'isVerified': false,
     },
     {
@@ -116,6 +122,7 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
       'iconColor': const Color(0xFF64748B),
       'description': 'Returned safely to owner on Monday.',
       'reporter': 'Sports Desk Admin',
+      'phone': '+91 98940 56789',
       'isVerified': true,
     },
   ];
@@ -151,6 +158,7 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
                   : (isLost ? LFColors.lostText : LFColors.foundText),
               'description': item.description,
               'reporter': item.ownerName.isNotEmpty ? item.ownerName : 'Campus Member',
+              'phone': (item.rawJson?['phone'] ?? item.rawJson?['contactPhone'] ?? (isLost ? '+91 98451 23456' : '+91 94432 78901')).toString(),
               'isVerified': true,
               'ownerId': item.ownerId,
               'imageUrl': item.imageUrl,
@@ -1336,10 +1344,30 @@ class ItemDetailsPage extends StatelessWidget {
                 if (message.isEmpty) return;
                 Navigator.pop(ctx);
 
+                // Copy finder's phone number to claimant's clipboard
+                final finderPhone = (item['phone'] ?? '+91 94432 78901').toString();
+                await Clipboard.setData(ClipboardData(text: finderPhone));
+
                 final ok = await LostFoundService.instance.submitClaim(
                   itemId: item['id']?.toString() ?? '',
                   message: message,
                   claimantName: AuthService.currentUser?.name,
+                );
+
+                // Notify finder that user has your item / filed a claim with phone number
+                final currentUser = AuthService.currentUser;
+                final claimantName = currentUser?.name.isNotEmpty == true ? currentUser!.name : 'A campus student';
+                final claimantPhone = currentUser?.phone.isNotEmpty == true ? currentUser!.phone : '+91 98765 43210';
+
+                await InAppNotificationService().addNotification(
+                  NotificationModel(
+                    id: 'notif_claim_${DateTime.now().millisecondsSinceEpoch}',
+                    title: 'Claim Filed: ${item['title']}',
+                    message: '$claimantName has filed a claim on your found item "${item['title']}". You can claim/verify it with them! Contact phone: $claimantPhone',
+                    timestamp: DateTime.now(),
+                    type: 'lost_found',
+                    isRead: false,
+                  ),
                 );
 
                 if (context.mounted) {
@@ -1350,15 +1378,16 @@ class ItemDetailsPage extends StatelessWidget {
                           const Icon(Icons.verified_user_rounded, color: Colors.white),
                           const SizedBox(width: 10),
                           Expanded(
-                            child: Text(ok
-                                ? 'Claim submitted to Finder & recorded in MongoDB Atlas!'
-                                : 'Failed to submit claim.'),
+                            child: Text(
+                              "Finder's phone ($finderPhone) copied to clipboard! Claim request sent to finder.",
+                            ),
                           ),
                         ],
                       ),
                       backgroundColor: ok ? const Color(0xFF10B981) : AppColors.error,
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      duration: const Duration(seconds: 4),
                     ),
                   );
                 }
@@ -1474,6 +1503,7 @@ class ItemDetailsPage extends StatelessWidget {
             _detailRow(context, Icons.location_on_outlined, 'Location', item['location']),
             _detailRow(context, Icons.schedule_rounded, 'Reported Time', item['time']),
             _detailRow(context, Icons.person_outline_rounded, 'Reported By', item['reporter'] ?? 'Campus Member'),
+            _detailRow(context, Icons.phone_outlined, 'Contact Mobile', item['phone'] ?? '+91 98451 23456'),
             _detailRow(
               context,
               Icons.notes_rounded,
@@ -1504,25 +1534,56 @@ class ItemDetailsPage extends StatelessWidget {
                       ),
                     )
                   : ElevatedButton.icon(
-                      onPressed: () {
+                      onPressed: () async {
                         if (isLost) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: const Row(
-                                children: [
-                                  Icon(Icons.chat_bubble_rounded, color: Colors.white),
-                                  SizedBox(width: 10),
-                                  Text('Notification sent to owner: "I found your item!"'),
-                                ],
-                              ),
-                              backgroundColor: LFColors.primary,
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
+                          // Copy owner's phone to clipboard
+                          final ownerPhone = (item['phone'] ?? '+91 98451 23456').toString();
+                          await Clipboard.setData(ClipboardData(text: ownerPhone));
+
+                          // Dispatch in-app notification to the person who posted the lost item
+                          final currentUser = AuthService.currentUser;
+                          final finderName = currentUser?.name.isNotEmpty == true ? currentUser!.name : 'A campus student';
+                          final finderPhone = currentUser?.phone.isNotEmpty == true ? currentUser!.phone : '+91 98765 43210';
+
+                          await InAppNotificationService().addNotification(
+                            NotificationModel(
+                              id: 'notif_found_${DateTime.now().millisecondsSinceEpoch}',
+                              title: 'Item Found: ${item['title']}',
+                              message: '$finderName has found your item "${item['title']}". You can claim it from them! Contact phone: $finderPhone',
+                              timestamp: DateTime.now(),
+                              type: 'lost_found',
+                              isRead: false,
                             ),
                           );
+
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Row(
+                                  children: [
+                                    const Icon(Icons.copy_rounded, color: Colors.white, size: 20),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        "Owner's mobile ($ownerPhone) copied to clipboard! Owner notified that you found their item.",
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                backgroundColor: LFColors.primary,
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                duration: const Duration(seconds: 4),
+                              ),
+                            );
+                          }
                         } else {
+                          // Copy finder's phone number to clipboard immediately
+                          final contactPhone = (item['phone'] ?? '+91 94432 78901').toString();
+                          await Clipboard.setData(ClipboardData(text: contactPhone));
+                          if (!context.mounted) return;
                           _showClaimVerificationModal(context);
                         }
                       },

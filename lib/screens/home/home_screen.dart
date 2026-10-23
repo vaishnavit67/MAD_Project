@@ -366,6 +366,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           AppBar(
             automaticallyImplyLeading: false,
+            toolbarHeight: 72,
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             elevation: 0,
             title: Column(
@@ -465,7 +466,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       crossAxisCount: 2,
                       mainAxisSpacing: 12,
                       crossAxisSpacing: 12,
-                      childAspectRatio: 2.15,
+                      childAspectRatio: 1.85,
                       children: [
                         FeatureCard(
                           title: 'Navigation',

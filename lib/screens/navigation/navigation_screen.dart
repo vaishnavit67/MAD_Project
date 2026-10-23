@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/constants/app_colors.dart';
 import '../../models/campus_location.dart';
 import '../../services/location_service.dart';
 import '../../services/history_service.dart';
@@ -165,6 +166,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: AppColors.card(context),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -172,6 +174,10 @@ class _NavigationScreenState extends State<NavigationScreen> {
         return Container(
           height: MediaQuery.of(context).size.height * 0.7,
           padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: AppColors.card(context),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -180,7 +186,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
                   width: 36,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFCBD5E1),
+                    color: AppColors.borderCol(context),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -202,18 +208,18 @@ class _NavigationScreenState extends State<NavigationScreen> {
                     children: [
                       Text(
                         categoryName,
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.text(context)),
                       ),
                       Text(
                         '${catLocations.length} locations on campus',
-                        style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                        style: TextStyle(fontSize: 12, color: AppColors.subtext(context)),
                       ),
                     ],
                   ),
                 ],
               ),
               const SizedBox(height: 16),
-              const Divider(height: 1, color: Color(0xFFE2E8F0)),
+              Divider(height: 1, color: AppColors.borderCol(context)),
               const SizedBox(height: 12),
               Expanded(
                 child: ListView.separated(
@@ -235,19 +241,21 @@ class _NavigationScreenState extends State<NavigationScreen> {
   void _addIntermediateStop() {
     showModalBottomSheet(
       context: context,
+      backgroundColor: AppColors.card(context),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return Padding(
+        return Container(
+          color: AppColors.card(context),
           padding: const EdgeInsets.all(20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Add Intermediate Stop',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.text(context)),
               ),
               const SizedBox(height: 12),
               Expanded(
@@ -256,9 +264,9 @@ class _NavigationScreenState extends State<NavigationScreen> {
                   itemBuilder: (context, index) {
                     final loc = allLocations[index];
                     return ListTile(
-                      leading: Icon(_getCategoryIcon(loc.category), color: const Color(0xFF155EEF)),
-                      title: Text(loc.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                      subtitle: Text(loc.category),
+                      leading: Icon(_getCategoryIcon(loc.category), color: AppColors.primary),
+                      title: Text(loc.name, style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.text(context))),
+                      subtitle: Text(loc.category, style: TextStyle(color: AppColors.subtext(context))),
                       onTap: () {
                         setState(() {
                           if (!intermediateStops.contains(loc.name)) {
@@ -281,39 +289,41 @@ class _NavigationScreenState extends State<NavigationScreen> {
   void _selectStartPointModal() {
     showModalBottomSheet(
       context: context,
+      backgroundColor: AppColors.card(context),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return Padding(
+        return Container(
+          color: AppColors.card(context),
           padding: const EdgeInsets.all(20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Select Starting Location',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.text(context)),
               ),
               const SizedBox(height: 12),
               ListTile(
-                leading: const Icon(Icons.my_location, color: Color(0xFF155EEF)),
-                title: const Text('My Current GPS Location', style: TextStyle(fontWeight: FontWeight.bold)),
+                leading: const Icon(Icons.my_location, color: AppColors.primary),
+                title: Text('My Current GPS Location', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.text(context))),
                 onTap: () {
                   setState(() => startLocation = 'My Current GPS Location');
                   Navigator.pop(context);
                 },
               ),
-              const Divider(),
+              Divider(color: AppColors.borderCol(context)),
               Expanded(
                 child: ListView.builder(
                   itemCount: allLocations.length,
                   itemBuilder: (context, index) {
                     final loc = allLocations[index];
                     return ListTile(
-                      leading: Icon(_getCategoryIcon(loc.category), color: const Color(0xFF155EEF)),
-                      title: Text(loc.name),
-                      subtitle: Text(loc.category),
+                      leading: Icon(_getCategoryIcon(loc.category), color: AppColors.primary),
+                      title: Text(loc.name, style: TextStyle(color: AppColors.text(context))),
+                      subtitle: Text(loc.category, style: TextStyle(color: AppColors.subtext(context))),
                       onTap: () {
                         setState(() => startLocation = loc.name);
                         Navigator.pop(context);
@@ -332,19 +342,21 @@ class _NavigationScreenState extends State<NavigationScreen> {
   void _selectDestinationModal() {
     showModalBottomSheet(
       context: context,
+      backgroundColor: AppColors.card(context),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return Padding(
+        return Container(
+          color: AppColors.card(context),
           padding: const EdgeInsets.all(20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Select Final Destination',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.text(context)),
               ),
               const SizedBox(height: 12),
               Expanded(
@@ -353,9 +365,9 @@ class _NavigationScreenState extends State<NavigationScreen> {
                   itemBuilder: (context, index) {
                     final loc = allLocations[index];
                     return ListTile(
-                      leading: Icon(_getCategoryIcon(loc.category), color: const Color(0xFF155EEF)),
-                      title: Text(loc.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                      subtitle: Text('${loc.category} • ${loc.distance}'),
+                      leading: Icon(_getCategoryIcon(loc.category), color: AppColors.primary),
+                      title: Text(loc.name, style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.text(context))),
+                      subtitle: Text('${loc.category} • ${loc.distance}', style: TextStyle(color: AppColors.subtext(context))),
                       onTap: () {
                         setState(() => routeDestination = loc.name);
                         Navigator.pop(context);
@@ -374,31 +386,31 @@ class _NavigationScreenState extends State<NavigationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppColors.bg(context),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.card(context),
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A)),
+          icon: Icon(Icons.arrow_back, color: AppColors.text(context)),
           onPressed: () {
             if (Navigator.canPop(context)) {
               Navigator.pop(context);
             }
           },
         ),
-        title: const Text(
+        title: Text(
           'Campus Navigation',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 18,
-            color: Color(0xFF0F172A),
+            color: AppColors.text(context),
           ),
         ),
         actions: [
           IconButton(
             tooltip: 'Trip History',
-            icon: const Icon(Icons.history_rounded, color: Color(0xFF155EEF)),
+            icon: const Icon(Icons.history_rounded, color: AppColors.primary),
             onPressed: () => Navigator.pushNamed(context, '/history'),
           ),
           const SizedBox(width: 6),
@@ -413,15 +425,15 @@ class _NavigationScreenState extends State<NavigationScreen> {
       bottomNavigationBar: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.card(context),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: Colors.black.withValues(alpha: AppColors.isDark(context) ? 0.3 : 0.05),
               blurRadius: 12,
               offset: const Offset(0, -4),
             ),
           ],
-          border: const Border(top: BorderSide(color: Color(0xFFE2E8F0))),
+          border: Border(top: BorderSide(color: AppColors.borderCol(context))),
         ),
         child: SafeArea(
           child: Row(
@@ -496,12 +508,12 @@ class _NavigationScreenState extends State<NavigationScreen> {
           // SEARCH INPUT FIELD
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.card(context),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
+              border: Border.all(color: AppColors.borderCol(context)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.02),
+                  color: Colors.black.withValues(alpha: AppColors.isDark(context) ? 0.2 : 0.02),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -509,12 +521,13 @@ class _NavigationScreenState extends State<NavigationScreen> {
             ),
             child: TextField(
               controller: searchController,
+              style: TextStyle(color: AppColors.text(context)),
               decoration: InputDecoration(
                 hintText: 'Search campus buildings, canteens, hostels...',
-                prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF94A3B8), size: 20),
+                prefixIcon: Icon(Icons.search_rounded, color: AppColors.subtext(context), size: 20),
                 suffixIcon: searchController.text.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.close_rounded, color: Colors.black54, size: 18),
+                        icon: Icon(Icons.close_rounded, color: AppColors.subtext(context), size: 18),
                         onPressed: () => searchController.clear(),
                       )
                     : null,
@@ -522,16 +535,16 @@ class _NavigationScreenState extends State<NavigationScreen> {
                 enabledBorder: InputBorder.none,
                 focusedBorder: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
+                hintStyle: TextStyle(fontSize: 13, color: AppColors.subtext(context)),
               ),
             ),
           ),
           const SizedBox(height: 16),
 
           // CATEGORY GRID TILES (Boys Hostel followed by Girls Hostel)
-          const Text(
+          Text(
             'Explore Categories',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.text(context)),
           ),
           const SizedBox(height: 10),
           Row(
@@ -565,11 +578,11 @@ class _NavigationScreenState extends State<NavigationScreen> {
             children: [
               Text(
                 selectedCategory == 'All' ? 'All Campus Destinations' : '$selectedCategory Locations',
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.text(context)),
               ),
               Text(
                 '${filteredLocations.length} places',
-                style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                style: TextStyle(fontSize: 12, color: AppColors.subtext(context)),
               ),
             ],
           ),
@@ -577,10 +590,10 @@ class _NavigationScreenState extends State<NavigationScreen> {
 
           // DESTINATIONS LIST
           filteredLocations.isEmpty
-              ? const Center(
+              ? Center(
                   child: Padding(
-                    padding: EdgeInsets.all(32),
-                    child: Text('No locations found matching search.', style: TextStyle(color: Color(0xFF64748B))),
+                    padding: const EdgeInsets.all(32),
+                    child: Text('No locations found matching search.', style: TextStyle(color: AppColors.subtext(context))),
                   ),
                 )
               : ListView.separated(
@@ -603,12 +616,12 @@ class _NavigationScreenState extends State<NavigationScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.card(context),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
+          border: Border.all(color: AppColors.borderCol(context)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
+              color: Colors.black.withValues(alpha: AppColors.isDark(context) ? 0.2 : 0.02),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -627,7 +640,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
             const SizedBox(height: 8),
             Text(
               label,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF334155)),
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.text(context)),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -648,12 +661,12 @@ class _NavigationScreenState extends State<NavigationScreen> {
           Container(
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.card(context),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
+              border: Border.all(color: AppColors.borderCol(context)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.03),
+                  color: Colors.black.withValues(alpha: AppColors.isDark(context) ? 0.2 : 0.03),
                   blurRadius: 10,
                   offset: const Offset(0, 3),
                 ),
@@ -667,22 +680,22 @@ class _NavigationScreenState extends State<NavigationScreen> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEAF2FF),
+                        color: AppColors.primary.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(Icons.alt_route_rounded, color: Color(0xFF155EEF), size: 20),
+                      child: const Icon(Icons.alt_route_rounded, color: AppColors.primary, size: 20),
                     ),
                     const SizedBox(width: 10),
-                    const Column(
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'Multi-Stop Route Builder',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.text(context)),
                         ),
                         Text(
                           'Plan optimal walking paths with intermediate stops',
-                          style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                          style: TextStyle(fontSize: 11, color: AppColors.subtext(context)),
                         ),
                       ],
                     ),
@@ -691,28 +704,28 @@ class _NavigationScreenState extends State<NavigationScreen> {
                 const SizedBox(height: 16),
 
                 // START LOCATION ROW
-                const Text('Starting Point', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF64748B))),
+                Text('Starting Point', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.subtext(context))),
                 const SizedBox(height: 6),
                 InkWell(
                   onTap: _selectStartPointModal,
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF8FAFC),
+                      color: AppColors.bg(context),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                      border: Border.all(color: AppColors.borderCol(context)),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.my_location_rounded, color: Color(0xFF155EEF), size: 18),
+                        const Icon(Icons.my_location_rounded, color: AppColors.primary, size: 18),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
                             startLocation,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0F172A)),
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.text(context)),
                           ),
                         ),
-                        const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF64748B), size: 20),
+                        Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.subtext(context), size: 20),
                       ],
                     ),
                   ),
@@ -861,9 +874,9 @@ class _NavigationScreenState extends State<NavigationScreen> {
               final item = recentItems[index];
               return Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.card(context),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  border: Border.all(color: AppColors.borderCol(context)),
                 ),
                 child: ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
@@ -875,8 +888,8 @@ class _NavigationScreenState extends State<NavigationScreen> {
                     ),
                     child: Icon(_getCategoryIcon(item.category), color: _getCategoryColor(item.category), size: 20),
                   ),
-                  title: Text(item.locationName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                  subtitle: Text('${item.category} • ${item.distance} (${item.walkingTime})', style: const TextStyle(fontSize: 12)),
+                  title: Text(item.locationName, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.text(context))),
+                  subtitle: Text('${item.category} • ${item.distance} (${item.walkingTime})', style: TextStyle(fontSize: 12, color: AppColors.subtext(context))),
                   trailing: const Icon(Icons.navigation_rounded, color: Color(0xFF155EEF), size: 20),
                   onTap: () {
                     Navigator.pushNamed(
@@ -906,9 +919,9 @@ class _NavigationScreenState extends State<NavigationScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               'Recent Shortcuts',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.text(context)),
             ),
             InkWell(
               onTap: () => setState(() => _selectedNavTab = 2),
@@ -941,9 +954,9 @@ class _NavigationScreenState extends State<NavigationScreen> {
                   margin: const EdgeInsets.only(right: 10),
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.card(context),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    border: Border.all(color: AppColors.borderCol(context)),
                   ),
                   child: Row(
                     children: [
@@ -953,8 +966,8 @@ class _NavigationScreenState extends State<NavigationScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(item.locationName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                          Text(item.walkingTime, style: const TextStyle(fontSize: 10, color: Color(0xFF64748B))),
+                          Text(item.locationName, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.text(context))),
+                          Text(item.walkingTime, style: TextStyle(fontSize: 10, color: AppColors.subtext(context))),
                         ],
                       ),
                     ],
@@ -972,12 +985,12 @@ class _NavigationScreenState extends State<NavigationScreen> {
   Widget _buildCleanLocationTile(CampusLocation location) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card(context),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: AppColors.borderCol(context)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withValues(alpha: AppColors.isDark(context) ? 0.2 : 0.02),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -1013,16 +1026,16 @@ class _NavigationScreenState extends State<NavigationScreen> {
         ),
         title: Text(
           location.name,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF0F172A)),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.text(context)),
         ),
         subtitle: Text(
           '${location.category} • ${location.distance} (${location.walkingTime})',
-          style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+          style: TextStyle(fontSize: 12, color: AppColors.subtext(context)),
         ),
         trailing: IconButton(
           icon: Icon(
             location.isFavorite ? Icons.star_rounded : Icons.star_outline_rounded,
-            color: location.isFavorite ? const Color(0xFFD97706) : const Color(0xFFCBD5E1),
+            color: location.isFavorite ? const Color(0xFFD97706) : AppColors.subtext(context),
             size: 22,
           ),
           onPressed: () => _toggleFavorite(location),

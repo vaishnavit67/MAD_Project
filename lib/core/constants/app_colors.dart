@@ -27,4 +27,5 @@ class AppColors {
   static Color text(BuildContext context) => isDark(context) ? Colors.white : textPrimary;
   static Color subtext(BuildContext context) => isDark(context) ? const Color(0xFF94A3B8) : textSecondary;
   static Color borderCol(BuildContext context) => isDark(context) ? const Color(0xFF2D3748) : border;
+  static Color brd(BuildContext context) => borderCol(context);
 }
