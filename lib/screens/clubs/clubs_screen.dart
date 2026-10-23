@@ -7,6 +7,8 @@ import '../../services/auth_service.dart';
 import '../../services/club_service.dart';
 import '../../services/image_upload_service.dart';
 import '../../features/notifications/services/notification_service.dart';
+import '../../features/notifications/models/notification_model.dart';
+import '../../features/notifications/services/in_app_notification_service.dart';
 
 /* =========================================================
                           CLUBS
@@ -1022,6 +1024,14 @@ class _ClubDetailsPageState extends State<ClubDetailsPage> {
     final clubId = widget.club['id']?.toString() ?? '';
     final reqId = (req['_id'] ?? req['id'] ?? '').toString();
     final studentName = req['userName'] ?? 'Amrita Student';
+    final studentTargetId = (req['userEmail'] ??
+            req['email'] ??
+            req['userId'] ??
+            req['studentId'] ??
+            (req['userName'] != null
+                ? 'student_${req['userName'].toString().replaceAll(RegExp(r'\W'), '_')}'
+                : 'student_member'))
+        .toString();
 
     if (clubId.startsWith('seed-')) {
       setState(() {
@@ -1031,20 +1041,30 @@ class _ClubDetailsPageState extends State<ClubDetailsPage> {
         }
       });
       if (setModalState != null) setModalState(() {});
-      NotificationService().showInstantNotification(
-        id: DateTime.now().millisecondsSinceEpoch % 100000,
-        title: newStatus == 'approved' ? 'Club Join Approved ✅' : 'Request Declined ✕',
-        body: newStatus == 'approved'
-            ? '$studentName has been enrolled in ${widget.club['name']}. Confirmation email sent.'
-            : 'Join request for $studentName was declined.',
-        type: 'club',
+
+      // Send in-app notification directly to the student (not the teacher)
+      await InAppNotificationService().addNotification(
+        NotificationModel(
+          id: 'club_${newStatus}_${DateTime.now().millisecondsSinceEpoch}',
+          title: newStatus == 'approved' ? 'Club Membership Approved! 🎉' : 'Club Request Update ✕',
+          message: newStatus == 'approved'
+              ? 'Congratulations $studentName! Your request to join ${widget.club['name']} was accepted. You are part of this club and welcome!'
+              : 'Your request to join ${widget.club['name']} was reviewed and declined.',
+          timestamp: DateTime.now(),
+          type: newStatus == 'approved' ? 'club_accepted' : 'club',
+          relatedClubId: clubId,
+        ),
+        recipientRole: 'Student',
+        recipientId: studentTargetId,
+        relatedClubId: clubId,
       );
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(newStatus == 'approved'
-                ? '$studentName approved! Confirmation email dispatched to student.'
-                : 'Join request from $studentName declined.'),
+                ? '$studentName approved! Notification sent to student.'
+                : 'Join request from $studentName declined. Notification sent to student.'),
             backgroundColor: newStatus == 'approved' ? const Color(0xFF10B981) : Colors.redAccent,
           ),
         );
@@ -1061,20 +1081,30 @@ class _ClubDetailsPageState extends State<ClubDetailsPage> {
         }
       });
       if (setModalState != null) setModalState(() {});
-      NotificationService().showInstantNotification(
-        id: DateTime.now().millisecondsSinceEpoch % 100000,
-        title: newStatus == 'approved' ? 'Club Join Approved ✅' : 'Request Declined ✕',
-        body: newStatus == 'approved'
-            ? '$studentName has been enrolled in ${widget.club['name']}. Confirmation email sent.'
-            : 'Join request was declined.',
-        type: 'club',
+
+      // Send in-app notification directly to the student (not the teacher)
+      await InAppNotificationService().addNotification(
+        NotificationModel(
+          id: 'club_${newStatus}_${DateTime.now().millisecondsSinceEpoch}',
+          title: newStatus == 'approved' ? 'Club Membership Approved! 🎉' : 'Club Request Update ✕',
+          message: newStatus == 'approved'
+              ? 'Congratulations $studentName! Your request to join ${widget.club['name']} was accepted. You are part of this club and welcome!'
+              : 'Your request to join ${widget.club['name']} was reviewed and declined.',
+          timestamp: DateTime.now(),
+          type: newStatus == 'approved' ? 'club_accepted' : 'club',
+          relatedClubId: clubId,
+        ),
+        recipientRole: 'Student',
+        recipientId: studentTargetId,
+        relatedClubId: clubId,
       );
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(newStatus == 'approved'
-                ? '$studentName approved! Confirmation email dispatched to student.'
-                : 'Join request declined.'),
+                ? '$studentName approved! Notification sent to student.'
+                : 'Join request from $studentName declined. Notification sent to student.'),
             backgroundColor: newStatus == 'approved' ? const Color(0xFF10B981) : Colors.redAccent,
           ),
         );
@@ -1136,11 +1166,29 @@ class _ClubDetailsPageState extends State<ClubDetailsPage> {
         _isPending = true;
       });
 
+      // 1. Notify Teacher Lead so they don't miss the message request
+      InAppNotificationService().addNotification(
+        NotificationModel(
+          id: 'club_req_${DateTime.now().millisecondsSinceEpoch}',
+          title: 'Club Join Request 👥',
+          message: '${AuthService.currentUser?.name ?? "Amrita Student"} requested to join ${widget.club['name']}. Review and approve in Clubs tab.',
+          timestamp: DateTime.now(),
+          type: 'club',
+          relatedClubId: clubId,
+        ),
+        recipientRole: 'Faculty',
+        recipientId: widget.club['leadEmail'] ?? 'all',
+        relatedClubId: clubId,
+      );
+
+      // 2. Notify Student confirmation
       NotificationService().showInstantNotification(
         id: DateTime.now().millisecondsSinceEpoch % 100000,
         title: 'Club Join Request Sent ⏳',
-        body: 'Your join request for "${widget.club['name']}" has been emailed to the Teacher. You will be notified when approved.',
+        body: 'Your join request for "${widget.club['name']}" was submitted. Notification sent to Teacher Lead.',
         type: 'club',
+        targetRecipientRole: 'Student',
+        relatedClubId: clubId,
       );
 
       if (!mounted) return;
@@ -1148,9 +1196,9 @@ class _ClubDetailsPageState extends State<ClubDetailsPage> {
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.mark_email_read_rounded, color: Colors.white),
+              const Icon(Icons.notifications_active_rounded, color: Colors.white),
               const SizedBox(width: 10),
-              Expanded(child: Text('Join request emailed to Teacher for ${widget.club['name']}!')),
+              Expanded(child: Text('Join request notification sent to Teacher for ${widget.club['name']}!')),
             ],
           ),
           backgroundColor: const Color(0xFF6366F1),
@@ -1160,6 +1208,21 @@ class _ClubDetailsPageState extends State<ClubDetailsPage> {
       );
       return;
     }
+
+    // 1. Notify Teacher Lead in-app so they never miss requests
+    InAppNotificationService().addNotification(
+      NotificationModel(
+        id: 'club_req_${DateTime.now().millisecondsSinceEpoch}',
+        title: 'Club Join Request 👥',
+        message: '${AuthService.currentUser?.name ?? "Amrita Student"} requested to join ${widget.club['name']}. Review and approve in Clubs tab.',
+        timestamp: DateTime.now(),
+        type: 'club',
+        relatedClubId: clubId,
+      ),
+      recipientRole: 'Faculty',
+      recipientId: widget.club['leadEmail'] ?? 'all',
+      relatedClubId: clubId,
+    );
 
     final result = await ClubService.instance.joinClubWithResult(clubId);
     if (!mounted) return;
@@ -1171,17 +1234,19 @@ class _ClubDetailsPageState extends State<ClubDetailsPage> {
       NotificationService().showInstantNotification(
         id: DateTime.now().millisecondsSinceEpoch % 100000,
         title: 'Club Join Request Sent ⏳',
-        body: 'Your application to join "${widget.club['name']}" has been sent to the Teacher Lead. Check your student email for confirmation.',
+        body: 'Your application to join "${widget.club['name']}" has been sent to the Teacher Lead. You will receive a notification when approved.',
         type: 'club',
+        targetRecipientRole: 'Student',
+        relatedClubId: clubId,
       );
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.mark_email_read_rounded, color: Colors.white),
+              const Icon(Icons.notifications_active_rounded, color: Colors.white),
               const SizedBox(width: 10),
-              Expanded(child: Text(result.message)),
+              Expanded(child: Text('Join request notification sent to Teacher for ${widget.club['name']}!')),
             ],
           ),
           backgroundColor: const Color(0xFF6366F1),
@@ -1313,7 +1378,7 @@ class _ClubDetailsPageState extends State<ClubDetailsPage> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'When students request to join, their applications will appear here and in your faculty email.',
+                              'When students request to join, their applications will appear here and in your in-app notifications.',
                               textAlign: TextAlign.center,
                               style: TextStyle(fontSize: 12, color: LFColors.subtext(context)),
                             ),
@@ -1572,7 +1637,7 @@ class _ClubDetailsPageState extends State<ClubDetailsPage> {
               ),
               child: Column(
                 children: [
-                  const Icon(Icons.mark_email_read_rounded, size: 36, color: Color(0xFF10B981)),
+                  const Icon(Icons.check_circle_outline_rounded, size: 36, color: Color(0xFF10B981)),
                   const SizedBox(height: 8),
                   Text(
                     'All Requests Reviewed',

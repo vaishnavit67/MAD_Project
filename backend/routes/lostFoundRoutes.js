@@ -60,4 +60,12 @@ router.get('/:id/claims', requireAuth, lostFoundController.getItemClaims);
  */
 router.patch('/:id/claims/:claimId', requireAuth, lostFoundController.updateClaimStatus);
 
+/**
+ * @route   POST /api/lost-found/:id/found-notice
+ * @desc    Notify the owner of a lost item that someone found it
+ * @access  Optional Auth / Public
+ */
+router.post('/:id/found-notice', optionalAuth, lostFoundController.notifyItemFound);
+
 module.exports = router;
+

@@ -7,6 +7,7 @@ class NotificationModel {
   final bool isRead;
   final String? relatedEventId;
   final String? relatedTaskId;
+  final String? relatedClubId;
 
   NotificationModel({
     required this.id,
@@ -17,6 +18,7 @@ class NotificationModel {
     this.isRead = false,
     this.relatedEventId,
     this.relatedTaskId,
+    this.relatedClubId,
   });
 
   NotificationModel copyWith({bool? isRead}) {
@@ -29,6 +31,7 @@ class NotificationModel {
       isRead: isRead ?? this.isRead,
       relatedEventId: relatedEventId,
       relatedTaskId: relatedTaskId,
+      relatedClubId: relatedClubId,
     );
   }
 
@@ -42,6 +45,7 @@ class NotificationModel {
       'isRead': isRead,
       'relatedEventId': relatedEventId,
       'relatedTaskId': relatedTaskId,
+      'relatedClubId': relatedClubId,
     };
   }
 
@@ -55,6 +59,7 @@ class NotificationModel {
       isRead: map['isRead'] as bool,
       relatedEventId: map['relatedEventId'] as String?,
       relatedTaskId: map['relatedTaskId'] as String?,
+      relatedClubId: map['relatedClubId'] as String?,
     );
   }
 }

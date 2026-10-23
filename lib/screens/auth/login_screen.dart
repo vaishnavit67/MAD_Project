@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/theme/app_theme.dart';
 import '../../services/auth_service.dart';
 import '../../utils/validators.dart';
 import '../../widgets/app_button.dart';
@@ -210,30 +212,49 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.white,
-      appBar: AppBar(backgroundColor: AppColors.white, elevation: 0),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Center(
-                  child: Icon(Icons.school, size: 64, color: AppColors.primary),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  'Welcome Back!',
-                  style: Theme.of(context).textTheme.displayMedium,
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Sign in to access your Campus Connect account',
-                  style: TextStyle(color: AppColors.textSecondary, fontSize: 15),
-                ),
+    return Theme(
+      data: AppTheme.lightTheme,
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.dark,
+          systemNavigationBarColor: Colors.white,
+          systemNavigationBarIconBrightness: Brightness.dark,
+        ),
+        child: Builder(
+          builder: (context) {
+            return Scaffold(
+              backgroundColor: AppColors.white,
+              appBar: AppBar(
+                backgroundColor: AppColors.white,
+                elevation: 0,
+                iconTheme: const IconThemeData(color: AppColors.textPrimary),
+              ),
+              body: SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Center(
+                          child: Icon(Icons.school, size: 64, color: AppColors.primary),
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          'Welcome Back!',
+                          style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                                color: AppColors.textPrimary,
+                                fontWeight: FontWeight.bold,
+                              ) ??
+                              const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Sign in to access your Campus Connect account',
+                          style: TextStyle(color: AppColors.textSecondary, fontSize: 15),
+                        ),
                 const SizedBox(height: 24),
 
                 // SAVED ACCOUNT BANNER (IF LOADED)
@@ -442,6 +463,10 @@ class _LoginScreenState extends State<LoginScreen> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+          },
         ),
       ),
     );

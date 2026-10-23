@@ -4,6 +4,7 @@ import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import '../models/notification_model.dart';
 import 'in_app_notification_service.dart';
+import '../../../../services/auth_service.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -100,8 +101,26 @@ class NotificationService {
     required String body,
     String type = 'announcement',
     String? payload,
+    String? targetRecipientRole,
+    String? targetRecipientId,
+    String? relatedClubId,
   }) async {
-    // 1. Add to In-App Notification Feed
+    final currentUserId = AuthService.currentUser?.id;
+    final currentUserEmail = AuthService.currentUser?.email;
+    final currentRole = AuthService.currentRole;
+
+    final roleMatches = targetRecipientRole == null ||
+        targetRecipientRole.toLowerCase() == 'all' ||
+        targetRecipientRole.toLowerCase() == currentRole.toLowerCase();
+
+    final idMatches = (targetRecipientId == null || targetRecipientId == 'all')
+        ? roleMatches
+        : ((currentUserId != null && targetRecipientId == currentUserId) ||
+           (currentUserEmail != null && targetRecipientId.toLowerCase() == currentUserEmail.toLowerCase()));
+
+    final isForCurrentUser = roleMatches && idMatches;
+
+    // 1. Add to In-App Notification Feed for intended recipient
     try {
       await InAppNotificationService().addNotification(
         NotificationModel(
@@ -111,14 +130,18 @@ class NotificationService {
           timestamp: DateTime.now(),
           type: type,
           isRead: false,
+          relatedClubId: relatedClubId,
         ),
+        recipientRole: targetRecipientRole,
+        recipientId: targetRecipientId,
+        relatedClubId: relatedClubId,
       );
     } catch (e) {
       debugPrint('[NotificationService] InApp inbox error: $e');
     }
 
-    // 2. Dispatch Native Device Push/Local Notification
-    if (kIsWeb) return;
+    // 2. Dispatch Native Device Push/Local Notification ONLY if meant for the active user on this phone
+    if (kIsWeb || !isForCurrentUser) return;
     try {
       const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
         'campus_connect_channel',

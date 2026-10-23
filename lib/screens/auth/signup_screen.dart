@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/theme/app_theme.dart';
 import '../../services/auth_service.dart';
 import '../../utils/validators.dart';
 import '../../widgets/app_button.dart';
@@ -171,37 +173,52 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.white,
-      appBar: AppBar(
-        backgroundColor: AppColors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
+    return Theme(
+      data: AppTheme.lightTheme,
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.dark,
+          systemNavigationBarColor: Colors.white,
+          systemNavigationBarIconBrightness: Brightness.dark,
         ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Center(
-                  child: Icon(Icons.school, size: 64, color: AppColors.primary),
+        child: Builder(
+          builder: (context) {
+            return Scaffold(
+              backgroundColor: AppColors.white,
+              appBar: AppBar(
+                backgroundColor: AppColors.white,
+                elevation: 0,
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+                  onPressed: () => Navigator.of(context).pop(),
                 ),
-                const SizedBox(height: 24),
-                Text(
-                  'Create Account',
-                  style: Theme.of(context).textTheme.displayMedium,
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Select your role and fill in your details',
-                  style: TextStyle(color: AppColors.textSecondary, fontSize: 15),
-                ),
+              ),
+              body: SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Center(
+                          child: Icon(Icons.school, size: 64, color: AppColors.primary),
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          'Create Account',
+                          style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                                color: AppColors.textPrimary,
+                                fontWeight: FontWeight.bold,
+                              ) ??
+                              const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Select your role and fill in your details',
+                          style: TextStyle(color: AppColors.textSecondary, fontSize: 15),
+                        ),
                 const SizedBox(height: 20),
 
                 // ROLE SELECTOR TABS
@@ -354,6 +371,10 @@ class _SignupScreenState extends State<SignupScreen> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+          },
         ),
       ),
     );

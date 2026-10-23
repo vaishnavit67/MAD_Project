@@ -251,6 +251,31 @@ class LostFoundService {
     }
   }
 
+  /// Dispatch in-app notification to the owner of a lost item
+  Future<bool> notifyOwnerItemFound({
+    required String itemId,
+    required String finderName,
+    required String finderPhone,
+  }) async {
+    try {
+      final uri = Uri.parse('$_baseUrl/$itemId/found-notice');
+      final res = await http
+          .post(
+            uri,
+            headers: _headers(),
+            body: jsonEncode({
+              'finderName': finderName,
+              'finderPhone': finderPhone,
+            }),
+          )
+          .timeout(const Duration(seconds: 4));
+      return res.statusCode == 200;
+    } catch (e) {
+      debugPrint('[LostFoundService] Notify item found error: $e');
+      return false;
+    }
+  }
+
   List<LostItem> _filterLocal({
     String? type,
     String? category,

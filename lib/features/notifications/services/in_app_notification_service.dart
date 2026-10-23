@@ -55,7 +55,16 @@ class InAppNotificationService {
   Future<List<NotificationModel>> fetchNotificationsFromBackend() async {
     try {
       final role = AuthService.currentRole;
-      final uri = Uri.parse('$_baseUrl?role=$role');
+      final userId = AuthService.currentUser?.id ?? '';
+      final userEmail = AuthService.currentUser?.email ?? '';
+      final userName = AuthService.currentUser?.name ?? '';
+      final queryParams = <String, String>{
+        'role': role,
+        if (userId.isNotEmpty) 'userId': userId,
+        if (userEmail.isNotEmpty) 'email': userEmail,
+        if (userName.isNotEmpty) 'userName': userName,
+      };
+      final uri = Uri.parse(_baseUrl).replace(queryParameters: queryParams);
       final response = await http
           .get(uri, headers: _headers())
           .timeout(const Duration(milliseconds: 2500));
@@ -90,6 +99,7 @@ class InAppNotificationService {
               isRead: readStatus,
               relatedEventId: m['relatedEventId']?.toString(),
               relatedTaskId: m['relatedTaskId']?.toString(),
+              relatedClubId: m['relatedClubId']?.toString(),
             );
           }).toList();
 
@@ -139,11 +149,48 @@ class InAppNotificationService {
 
   // ── Write ─────────────────────────────────────────────────────────────────
 
-  Future<void> addNotification(NotificationModel n) async {
-    _fallbackMemory[n.id] = n.toMap();
-    try {
-      await _box?.put(n.id, n.toMap());
-    } catch (_) {}
+  Future<void> addNotification(
+    NotificationModel n, {
+    String? recipientId,
+    String? recipientRole,
+    String? relatedClubId,
+  }) async {
+    final currentUserId = AuthService.currentUser?.id;
+    final currentUserEmail = AuthService.currentUser?.email;
+    final currentRole = AuthService.currentRole;
+
+    // Check if notification is genuinely intended for the active user on this device
+    final roleMatches = recipientRole == null ||
+        recipientRole.toLowerCase() == 'all' ||
+        recipientRole.toLowerCase() == currentRole.toLowerCase();
+
+    final idMatches = (recipientId == null || recipientId == 'all')
+        ? roleMatches
+        : ((currentUserId != null && recipientId == currentUserId) ||
+           (currentUserEmail != null && recipientId.toLowerCase() == currentUserEmail.toLowerCase()));
+
+    final isForCurrentUser = roleMatches && idMatches;
+
+    if (isForCurrentUser) {
+      _fallbackMemory[n.id] = n.toMap();
+      try {
+        await _box?.put(n.id, n.toMap());
+      } catch (_) {}
+    } else {
+      // Save strictly into the recipient's user scope boxes so when they log in, it is there
+      try {
+        if (recipientId != null && recipientId != 'all' && recipientId.isNotEmpty) {
+          final recipientScope = recipientId.replaceAll(RegExp(r'\W'), '_');
+          final targetBox = await Hive.openBox<Map<dynamic, dynamic>>('notifications_box_$recipientScope');
+          await targetBox.put(n.id, n.toMap());
+        }
+        if (recipientRole != null && recipientRole.toLowerCase() != 'all') {
+          final roleScope = 'guest_${recipientRole.toLowerCase()}';
+          final roleBox = await Hive.openBox<Map<dynamic, dynamic>>('notifications_box_$roleScope');
+          await roleBox.put(n.id, n.toMap());
+        }
+      } catch (_) {}
+    }
 
     // Post to MongoDB backend
     try {
@@ -152,13 +199,14 @@ class InAppNotificationService {
         uri,
         headers: _headers(),
         body: jsonEncode({
-          'recipientId': AuthService.currentUser?.id ?? AuthService.currentUser?.email ?? 'all',
-          'recipientRole': AuthService.currentRole,
+          'recipientId': recipientId ?? currentUserId ?? currentUserEmail ?? 'all',
+          'recipientRole': recipientRole ?? 'All',
           'title': n.title,
           'message': n.message,
           'type': n.type,
           'relatedEventId': n.relatedEventId,
           'relatedTaskId': n.relatedTaskId,
+          'relatedClubId': relatedClubId ?? n.relatedClubId,
         }),
       );
     } catch (_) {}

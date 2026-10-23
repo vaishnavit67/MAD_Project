@@ -81,6 +81,7 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
       'description': 'White AirPods Pro case with a small dragon sticker on the back.',
       'reporter': 'Alex Rivera (CS Student)',
       'phone': '+91 98451 23456',
+      'ownerId': 'seed_alex_rivera',
       'isVerified': true,
     },
     {
@@ -95,6 +96,7 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
       'description': 'Herschel black bag containing notebooks and a blue water bottle.',
       'reporter': 'Campus Security Desk',
       'phone': '+91 94432 78901',
+      'ownerId': 'seed_campus_security',
       'isVerified': true,
     },
     {
@@ -109,6 +111,7 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
       'description': 'Blue hydro flask with stickers. Left near laptop charging station.',
       'reporter': 'Sarah Chen (ECE)',
       'phone': '+91 97890 12345',
+      'ownerId': 'seed_sarah_chen',
       'isVerified': false,
     },
     {
@@ -123,6 +126,7 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
       'description': 'Returned safely to owner on Monday.',
       'reporter': 'Sports Desk Admin',
       'phone': '+91 98940 56789',
+      'ownerId': 'seed_sports_desk',
       'isVerified': true,
     },
   ];
@@ -1354,20 +1358,24 @@ class ItemDetailsPage extends StatelessWidget {
                   claimantName: AuthService.currentUser?.name,
                 );
 
-                // Notify finder that user has your item / filed a claim with phone number
+                // Notify the finder who put up this found item (NOT the claimant)
                 final currentUser = AuthService.currentUser;
                 final claimantName = currentUser?.name.isNotEmpty == true ? currentUser!.name : 'A campus student';
                 final claimantPhone = currentUser?.phone.isNotEmpty == true ? currentUser!.phone : '+91 98765 43210';
+                final targetFinderId = (item['ownerId'] ?? item['phone'] ?? item['reporter'] ?? 'seed_campus_security').toString();
+                final finderName = (item['reporter'] ?? item['ownerName'] ?? 'Finder').toString();
 
                 await InAppNotificationService().addNotification(
                   NotificationModel(
                     id: 'notif_claim_${DateTime.now().millisecondsSinceEpoch}',
-                    title: 'Claim Filed: ${item['title']}',
-                    message: '$claimantName has filed a claim on your found item "${item['title']}". You can claim/verify it with them! Contact phone: $claimantPhone',
+                    title: 'Claim Filed: ${item['title']} 📦',
+                    message: '$claimantName has filed a claim on your found item "${item['title']}". You can verify and return it to them! Contact phone: $claimantPhone',
                     timestamp: DateTime.now(),
                     type: 'lost_found',
                     isRead: false,
                   ),
+                  recipientId: targetFinderId,
+                  recipientRole: 'Student',
                 );
 
                 if (context.mounted) {
@@ -1379,7 +1387,7 @@ class ItemDetailsPage extends StatelessWidget {
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              "Finder's phone ($finderPhone) copied to clipboard! Claim request sent to finder.",
+                              "Finder's phone ($finderPhone) copied to clipboard! Claim request sent to $finderName.",
                             ),
                           ),
                         ],
@@ -1535,26 +1543,65 @@ class ItemDetailsPage extends StatelessWidget {
                     )
                   : ElevatedButton.icon(
                       onPressed: () async {
+                        final currentUser = AuthService.currentUser;
+                        final currentUserId = currentUser?.id ?? '';
+                        final currentUserEmail = currentUser?.email ?? '';
+                        final currentUserName = currentUser?.name ?? '';
+
+                        final postOwnerId = (item['ownerId'] ?? '').toString();
+                        final postReporter = (item['reporter'] ?? '').toString();
+
+                        final isMyPost = (currentUserId.isNotEmpty && postOwnerId == currentUserId) ||
+                            (currentUserEmail.isNotEmpty && postOwnerId.toLowerCase() == currentUserEmail.toLowerCase()) ||
+                            (currentUserName.isNotEmpty && postReporter.toLowerCase() == currentUserName.toLowerCase());
+
                         if (isLost) {
+                          if (isMyPost) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: const Text(
+                                  'This is your own listing! You cannot mark your own lost item as found by yourself.',
+                                ),
+                                backgroundColor: AppColors.warning,
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                            );
+                            return;
+                          }
+
                           // Copy owner's phone to clipboard
                           final ownerPhone = (item['phone'] ?? '+91 98451 23456').toString();
                           await Clipboard.setData(ClipboardData(text: ownerPhone));
 
-                          // Dispatch in-app notification to the person who posted the lost item
-                          final currentUser = AuthService.currentUser;
+                          // Dispatch in-app notification to the person who posted the lost item (owner)
                           final finderName = currentUser?.name.isNotEmpty == true ? currentUser!.name : 'A campus student';
                           final finderPhone = currentUser?.phone.isNotEmpty == true ? currentUser!.phone : '+91 98765 43210';
+                          final targetOwnerId = (item['ownerId'] ?? item['phone'] ?? item['reporter'] ?? 'seed_alex_rivera').toString();
+                          final ownerName = (item['reporter'] ?? item['ownerName'] ?? 'Owner').toString();
 
                           await InAppNotificationService().addNotification(
                             NotificationModel(
                               id: 'notif_found_${DateTime.now().millisecondsSinceEpoch}',
-                              title: 'Item Found: ${item['title']}',
+                              title: 'Item Found: ${item['title']} 🎉',
                               message: '$finderName has found your item "${item['title']}". You can claim it from them! Contact phone: $finderPhone',
                               timestamp: DateTime.now(),
                               type: 'lost_found',
                               isRead: false,
                             ),
+                            recipientId: targetOwnerId,
+                            recipientRole: 'Student',
                           );
+
+                          // Also notify backend if this is a backend item
+                          final backendId = (item['id'] ?? '').toString();
+                          if (backendId.isNotEmpty && !backendId.startsWith('LF-')) {
+                            await LostFoundService.instance.notifyOwnerItemFound(
+                              itemId: backendId,
+                              finderName: finderName,
+                              finderPhone: finderPhone,
+                            );
+                          }
 
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -1565,7 +1612,7 @@ class ItemDetailsPage extends StatelessWidget {
                                     const SizedBox(width: 10),
                                     Expanded(
                                       child: Text(
-                                        "Owner's mobile ($ownerPhone) copied to clipboard! Owner notified that you found their item.",
+                                        "Owner's mobile ($ownerPhone) copied to clipboard! Notification sent to $ownerName.",
                                       ),
                                     ),
                                   ],
@@ -1580,6 +1627,21 @@ class ItemDetailsPage extends StatelessWidget {
                             );
                           }
                         } else {
+                          // Found item: Verify & Claim
+                          if (isMyPost) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: const Text(
+                                  'This is your own listing! You cannot claim an item you posted as found.',
+                                ),
+                                backgroundColor: AppColors.warning,
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                            );
+                            return;
+                          }
+
                           // Copy finder's phone number to clipboard immediately
                           final contactPhone = (item['phone'] ?? '+91 94432 78901').toString();
                           await Clipboard.setData(ClipboardData(text: contactPhone));

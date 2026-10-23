@@ -5,7 +5,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "test": "jest --runInBand --forceExit",
+    "test:lost-found": "node tests/lostFound.test.js"
   },
   "keywords": [
     "campus",

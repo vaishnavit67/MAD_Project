@@ -25,7 +25,7 @@ const notificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['task', 'event', 'club', 'lost_found', 'reminder', 'system', 'class'],
+      enum: ['task', 'event', 'club', 'club_accepted', 'lost_found', 'reminder', 'system', 'class'],
       default: 'system',
       index: true,
     },

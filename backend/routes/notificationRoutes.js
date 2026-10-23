@@ -123,8 +123,10 @@ router.get('/', optionalAuth, async (req, res) => {
   try {
     const roleParam = req.query.role || (req.user ? req.user.role : 'Student');
     const role = (roleParam.charAt(0).toUpperCase() + roleParam.slice(1).toLowerCase()).trim();
-    const userId = req.user ? (req.user.uid || req.user.id || req.user.email) : null;
-    const userEmail = req.user ? req.user.email : null;
+    const userId = req.user ? (req.user.uid || req.user.id || req.user.email) : (req.query.userId || null);
+    const userEmail = req.user ? req.user.email : (req.query.email || req.query.userEmail || null);
+    const userName = req.user ? req.user.name : (req.query.name || req.query.userName || null);
+    const sanitizedName = userName ? `student_${userName.replace(/\W/g, '_')}` : null;
 
     // Build filter: MUST match recipientRole (or 'All') AND recipientId (or 'all')
     const filter = {
@@ -140,6 +142,7 @@ router.get('/', optionalAuth, async (req, res) => {
             { recipientId: 'all' },
             ...(userId ? [{ recipientId: userId }] : []),
             ...(userEmail ? [{ recipientId: userEmail }] : []),
+            ...(sanitizedName ? [{ recipientId: sanitizedName }] : []),
           ],
         },
       ],
@@ -180,7 +183,7 @@ router.get('/', optionalAuth, async (req, res) => {
  * @desc    Create a new notification (used for club approvals, event signups, claim updates)
  * @access  Protected
  */
-router.post('/', requireAuth, async (req, res) => {
+router.post('/', optionalAuth, async (req, res) => {
   try {
     const { recipientId, recipientRole, title, message, type, relatedEventId, relatedTaskId, relatedClubId } = req.body;
 

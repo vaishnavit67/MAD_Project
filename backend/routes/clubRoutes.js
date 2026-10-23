@@ -2,11 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Club = require('../models/Club');
 const { requireAuth, optionalAuth, requireFaculty } = require('../middleware/firebaseAuth');
-const {
-  sendClubJoinRequestToTeacher,
-  sendClubJoinRequestConfirmationToStudent,
-  sendClubJoinApprovalToStudent,
-} = require('../services/emailService');
+const Notification = require('../models/Notification');
 
 /**
  * @route   GET /api/clubs
@@ -284,26 +280,34 @@ router.post('/:id/join', requireAuth, async (req, res) => {
     club.joinRequests.push(joinReq);
     await club.save();
 
-    // Trigger emails asynchronously
-    sendClubJoinRequestToTeacher({
-      teacherEmail: club.leadEmail || 'faculty@amrita.edu',
-      teacherName: club.createdByName || 'Faculty Lead',
-      studentName: req.user.name || 'Student',
-      studentEmail: req.user.email || '',
-      studentRoll: req.user.rollNumber || '',
-      clubName: club.name,
-    }).catch((e) => console.error('[Email Notice]:', e.message));
+    // Dispatch in-app notifications to Teacher Lead and Student
+    try {
+      // 1. Notify Teacher
+      await Notification.create({
+        recipientId: club.createdBy || club.leadEmail || 'all',
+        recipientRole: 'Faculty',
+        title: 'Club Join Request 👥',
+        message: `${req.user.name || 'A student'} requested to join ${club.name}. Review and approve in Clubs tab.`,
+        type: 'club',
+        relatedClubId: club._id.toString(),
+      });
 
-    sendClubJoinRequestConfirmationToStudent({
-      studentEmail: req.user.email || '',
-      studentName: req.user.name || 'Student',
-      clubName: club.name,
-      teacherName: club.createdByName || 'Faculty Lead',
-    }).catch((e) => console.error('[Email Notice]:', e.message));
+      // 2. Notify Student
+      await Notification.create({
+        recipientId: req.user.uid || req.user.email || 'all',
+        recipientRole: 'Student',
+        title: 'Club Join Request Sent ⏳',
+        message: `Your request to join ${club.name} was submitted. Notification sent to ${club.createdByName || 'Faculty Lead'}.`,
+        type: 'club',
+        relatedClubId: club._id.toString(),
+      });
+    } catch (e) {
+      console.error('[Notification dispatch error]:', e.message);
+    }
 
     return res.status(200).json({
       success: true,
-      message: `Join request submitted! You will become a member once approved by ${club.createdByName || 'the Faculty Lead'}.`,
+      message: `Join request submitted! Notification sent to ${club.createdByName || 'the Faculty Lead'}.`,
       club,
       isPending: true,
     });
@@ -412,20 +416,43 @@ router.patch('/:id/requests/:requestId', requireAuth, async (req, res) => {
         club.membersCount += 1;
       }
 
-      // Send approval email to student
-      sendClubJoinApprovalToStudent({
-        studentEmail: request.userEmail,
-        studentName: request.userName || 'Student',
-        clubName: club.name,
-        teacherName: club.createdByName || 'Faculty Lead',
-      }).catch((e) => console.error('[Email Notice]:', e.message));
+      // Dispatch in-app notification to student for acceptance celebration
+      try {
+        const studentRecipientId = request.userId || request.userEmail || (request.userName ? `student_${request.userName.replace(/\W/g, '_')}` : 'all');
+        await Notification.create({
+          recipientId: studentRecipientId,
+          recipientRole: 'Student',
+          title: 'Club Membership Approved! 🎉',
+          message: `Congratulations ${request.userName || 'Student'}! Your request to join ${club.name} was accepted. You are part of this club and welcome!`,
+          type: 'club_accepted',
+          relatedClubId: club._id.toString(),
+        });
+      } catch (e) {
+        console.error('[Notification dispatch error]:', e.message);
+      }
+    } else if (newStatus === 'rejected') {
+      try {
+        const studentRecipientId = request.userId || request.userEmail || (request.userName ? `student_${request.userName.replace(/\W/g, '_')}` : 'all');
+        await Notification.create({
+          recipientId: studentRecipientId,
+          recipientRole: 'Student',
+          title: 'Club Request Update ✕',
+          message: `Your request to join ${club.name} was reviewed and declined.`,
+          type: 'club',
+          relatedClubId: club._id.toString(),
+        });
+      } catch (e) {
+        console.error('[Notification dispatch error]:', e.message);
+      }
     }
 
     await club.save();
 
     return res.status(200).json({
       success: true,
-      message: `Join request has been ${newStatus}.`,
+      message: newStatus === 'approved'
+          ? `Join request approved! Notification sent to student.`
+          : `Join request declined. Notification sent to student.`,
       request,
       club,
     });

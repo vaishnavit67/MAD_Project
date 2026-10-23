@@ -1,11 +1,7 @@
 const mongoose = require('mongoose');
 const LostFound = require('../models/LostFound');
 const LostFoundClaim = require('../models/LostFoundClaim');
-const {
-  sendLostItemReportConfirmation,
-  sendLostItemClaimNotification,
-  sendClaimStatusNotification,
-} = require('../services/emailService');
+const Notification = require('../models/Notification');
 
 /**
  * Validates MongoDB ObjectId
@@ -188,15 +184,6 @@ exports.createItem = async (req, res) => {
       ownerName: finalOwnerName,
       status: 'active',
     });
-
-    // Send confirmation email asynchronously
-    sendLostItemReportConfirmation({
-      userEmail: (req.user && req.user.email) || req.body.ownerEmail,
-      userName: finalOwnerName,
-      itemTitle: newItem.title,
-      itemType: newItem.type,
-      location: newItem.location,
-    }).catch((e) => console.error('[Email Notice]:', e.message));
 
     return res.status(201).json({
       success: true,
@@ -400,14 +387,19 @@ exports.createClaim = async (req, res) => {
       status: 'pending',
     });
 
-    // Send claim notification email to item owner asynchronously
-    sendLostItemClaimNotification({
-      ownerEmail: item.ownerEmail || (item.ownerId && item.ownerId.includes('@') ? item.ownerId : null),
-      ownerName: item.ownerName,
-      claimantName: newClaim.claimantName,
-      itemTitle: item.title,
-      claimMessage: newClaim.message,
-    }).catch((e) => console.error('[Email Notice]:', e.message));
+    // Dispatch in-app notification to the item owner / finder who posted it
+    try {
+      const claimantPhone = (req.user && req.user.phone) || '';
+      await Notification.create({
+        recipientId: item.ownerId || 'all',
+        recipientRole: 'Student',
+        title: `Claim Filed: ${item.title} 📦`,
+        message: `${newClaim.claimantName} has filed a claim on your item "${item.title}". Contact phone: ${claimantPhone}`,
+        type: 'lost_found',
+      });
+    } catch (e) {
+      console.error('[Notification dispatch error]:', e.message);
+    }
 
     return res.status(201).json({
       success: true,
@@ -530,14 +522,20 @@ exports.updateClaimStatus = async (req, res) => {
       );
     }
 
-    // Send email to claimant asynchronously
-    sendClaimStatusNotification({
-      claimantEmail: claim.claimantEmail || (claim.claimantId && claim.claimantId.includes('@') ? claim.claimantId : null),
-      claimantName: claim.claimantName,
-      itemTitle: item.title,
-      status: newStatus,
-      ownerName: item.ownerName,
-    }).catch((e) => console.error('[Email Notice]:', e.message));
+    // Send in-app notification to claimant
+    try {
+      await Notification.create({
+        recipientId: claim.claimantId || 'all',
+        recipientRole: 'Student',
+        title: `Claim ${newStatus === 'approved' ? 'Approved ✅' : 'Declined ✕'}`,
+        message: newStatus === 'approved'
+          ? `Your claim for "${item.title}" was approved by ${item.ownerName}! You can coordinate with them to collect your item.`
+          : `Your claim for "${item.title}" was reviewed and declined.`,
+        type: 'lost_found',
+      });
+    } catch (e) {
+      console.error('[Notification dispatch error]:', e.message);
+    }
 
     return res.status(200).json({
       success: true,
@@ -550,6 +548,48 @@ exports.updateClaimStatus = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: error.message || 'Server error while updating claim status',
+    });
+  }
+};
+
+/**
+ * @desc    Notify the owner of a lost item that someone found it
+ * @route   POST /api/lost-found/:id/found-notice
+ * @access  Public / Optional Auth
+ */
+exports.notifyItemFound = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ success: false, message: 'Invalid item ID' });
+    }
+
+    const item = await LostFound.findById(id);
+    if (!item) {
+      return res.status(404).json({ success: false, message: 'Lost item not found' });
+    }
+
+    const finderName = (req.user && req.user.name) || req.body.finderName || 'A campus member';
+    const finderPhone = (req.user && req.user.phone) || req.body.finderPhone || '';
+
+    // Create notification for the owner who put it up as lost
+    await Notification.create({
+      recipientId: item.ownerId || 'all',
+      recipientRole: 'Student',
+      title: `Item Found: ${item.title} 🔍`,
+      message: `${finderName} found your lost item "${item.title}". You can claim it from them! Contact phone: ${finderPhone}`,
+      type: 'lost_found',
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: `Owner notified successfully that ${item.title} was found`,
+    });
+  } catch (error) {
+    console.error('[Notify Item Found Error]:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Error sending item found notification',
     });
   }
 };

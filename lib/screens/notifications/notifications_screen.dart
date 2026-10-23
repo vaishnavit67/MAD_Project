@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../features/notifications/models/notification_model.dart';
 import '../../../features/notifications/services/in_app_notification_service.dart';
+import '../../../widgets/confetti_celebration.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -35,6 +36,32 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     if (!n.isRead) {
       await _service.markAsRead(n.id);
       setState(() {});
+    }
+  }
+
+  void _onNotificationTap(NotificationModel n) {
+    _markRead(n);
+
+    // Check if notification is club membership approval / acceptance
+    final isClubAccepted = n.type == 'club_accepted' ||
+        (n.title.toLowerCase().contains('club') &&
+            (n.title.toLowerCase().contains('approved') ||
+                n.title.toLowerCase().contains('accepted') ||
+                n.message.toLowerCase().contains('accepted') ||
+                n.message.toLowerCase().contains('part of this club') ||
+                n.message.toLowerCase().contains('part of the club') ||
+                n.message.toLowerCase().contains('welcome')));
+
+    if (isClubAccepted) {
+      // Extract club name
+      String clubName = 'Campus Club';
+      final match = RegExp(r'join\s+([^.]+?)\s+was\s+accepted', caseSensitive: false).firstMatch(n.message) ??
+          RegExp(r'join\s+"([^"]+)"', caseSensitive: false).firstMatch(n.message) ??
+          RegExp(r'enrolled in\s+([^.]+?)\.', caseSensitive: false).firstMatch(n.message);
+      if (match != null && match.group(1) != null) {
+        clubName = match.group(1)!.trim();
+      }
+      showClubAcceptedCelebrationDialog(context, clubName: clubName);
     }
   }
 
@@ -243,7 +270,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       ),
       onDismissed: (_) => _delete(n),
       child: GestureDetector(
-        onTap: () => _markRead(n),
+        onTap: () => _onNotificationTap(n),
         child: Container(
           margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
           decoration: BoxDecoration(
@@ -399,37 +426,43 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   IconData _iconData(String type) {
     switch (type) {
-      case 'task':       return Icons.check_circle_rounded;
-      case 'event':      return Icons.event_rounded;
-      case 'reminder':   return Icons.alarm_rounded;
-      case 'message':    return Icons.message_rounded;
-      case 'lost_found': return Icons.inventory_2_rounded;
-      case 'system':     return Icons.notifications_rounded;
-      default:           return Icons.notifications_rounded;
+      case 'club_accepted': return Icons.celebration_rounded;
+      case 'club':          return Icons.groups_rounded;
+      case 'task':          return Icons.check_circle_rounded;
+      case 'event':         return Icons.event_rounded;
+      case 'reminder':      return Icons.alarm_rounded;
+      case 'message':       return Icons.message_rounded;
+      case 'lost_found':    return Icons.inventory_2_rounded;
+      case 'system':        return Icons.notifications_rounded;
+      default:              return Icons.notifications_rounded;
     }
   }
 
   Color _iconColor(String type) {
     switch (type) {
-      case 'task':       return const Color(0xFF2196F3);
-      case 'event':      return AppColors.primary;
-      case 'reminder':   return const Color(0xFFF57C00);
-      case 'message':    return const Color(0xFF26A69A);
-      case 'lost_found': return const Color(0xFFD97706);
-      case 'system':     return AppColors.textSecondary;
-      default:           return AppColors.primary;
+      case 'club_accepted': return const Color(0xFF10B981);
+      case 'club':          return const Color(0xFF6366F1);
+      case 'task':          return const Color(0xFF2196F3);
+      case 'event':         return AppColors.primary;
+      case 'reminder':      return const Color(0xFFF57C00);
+      case 'message':       return const Color(0xFF26A69A);
+      case 'lost_found':    return const Color(0xFFD97706);
+      case 'system':        return AppColors.textSecondary;
+      default:              return AppColors.primary;
     }
   }
 
   Color _iconBgColor(String type) {
     switch (type) {
-      case 'task':       return const Color(0xFFE3F2FD);
-      case 'event':      return AppColors.featureIconBg1;
-      case 'reminder':   return const Color(0xFFFFF3E0);
-      case 'message':    return const Color(0xFFE0F2F1);
-      case 'lost_found': return const Color(0xFFFEF3C7);
-      case 'system':     return AppColors.featureIconBg1;
-      default:           return AppColors.featureIconBg1;
+      case 'club_accepted': return const Color(0xFFECFDF5);
+      case 'club':          return const Color(0xFFEEF2FF);
+      case 'task':          return const Color(0xFFE3F2FD);
+      case 'event':         return AppColors.featureIconBg1;
+      case 'reminder':      return const Color(0xFFFFF3E0);
+      case 'message':       return const Color(0xFFE0F2F1);
+      case 'lost_found':    return const Color(0xFFFEF3C7);
+      case 'system':        return AppColors.featureIconBg1;
+      default:              return AppColors.featureIconBg1;
     }
   }
 
