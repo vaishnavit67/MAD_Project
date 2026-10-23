@@ -40,12 +40,14 @@ router.post('/signup', signupValidator, async (req, res) => {
   try {
     const { name, email, phone, rollNumber, password, role } = req.body;
     const cleanEmail = email.trim().toLowerCase();
-    const cleanPhone = phone.replace(/\D/g, '');
+    const rawDigits = phone.replace(/\D/g, '');
+    const cleanPhone = rawDigits.length >= 10 ? rawDigits.slice(-10) : rawDigits;
     const cleanRole = role.trim();
 
     // 1. Check if email already exists in any of the 3 role collections
+    const escapedEmail = cleanEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     for (const item of allModels) {
-      const existingUser = await item.model.findOne({ email: cleanEmail });
+      const existingUser = await item.model.findOne({ email: new RegExp(`^${escapedEmail}$`, 'i') });
       if (existingUser) {
         return res.status(409).json({
           success: false,
@@ -56,7 +58,14 @@ router.post('/signup', signupValidator, async (req, res) => {
 
     // 2. Check if phone already exists in any of the 3 role collections
     for (const item of allModels) {
-      const existingUser = await item.model.findOne({ phone: cleanPhone });
+      const existingUser = await item.model.findOne({
+        $or: [
+          { phone: cleanPhone },
+          { phone: `91${cleanPhone}` },
+          { phone: `+91${cleanPhone}` },
+          { phone: new RegExp(`${cleanPhone}$`) },
+        ],
+      });
       if (existingUser) {
         return res.status(409).json({
           success: false,
@@ -118,15 +127,23 @@ router.post('/login', loginValidator, async (req, res) => {
     // Build comprehensive search query for email, 10-digit phone, or rollNumber / Campus ID
     let searchFilter;
     if (cleanIdentity.includes('@')) {
-      searchFilter = { email: cleanIdentity };
-    } else if (digitsOnly.length === 10 || (digitsOnly.length > 10 && rawIdentity.startsWith('+'))) {
-      searchFilter = { phone: tenDigitPhone };
+      const escapedEmail = cleanIdentity.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      searchFilter = { email: new RegExp(`^${escapedEmail}$`, 'i') };
+    } else if (digitsOnly.length >= 10) {
+      searchFilter = {
+        $or: [
+          { phone: tenDigitPhone },
+          { phone: `91${tenDigitPhone}` },
+          { phone: `+91${tenDigitPhone}` },
+          { phone: new RegExp(`${tenDigitPhone}$`) },
+        ],
+      };
     } else {
       const escapedRaw = rawIdentity.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       searchFilter = {
         $or: [
           { rollNumber: new RegExp(`^${escapedRaw}$`, 'i') },
-          { email: cleanIdentity },
+          { email: new RegExp(`^${cleanIdentity.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') },
           { phone: tenDigitPhone || digitsOnly },
         ],
       };
@@ -144,6 +161,7 @@ router.post('/login', loginValidator, async (req, res) => {
           return res.status(403).json({
             success: false,
             message: `This account is registered as ${otherUser.role}. Please select the ${otherUser.role} tab to log in.`,
+            registeredRole: otherUser.role,
           });
         }
       }

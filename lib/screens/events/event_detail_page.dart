@@ -8,6 +8,7 @@ import 'event_registration_service.dart';
 import 'events_screen.dart' show eventCategoryColor, eventCategoryIcon;
 import '../../services/event_service.dart';
 import '../../services/auth_service.dart';
+import '../auth/login_screen.dart';
 
 class EventDetailPage extends StatefulWidget {
   final Event event;
@@ -25,6 +26,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
   Event get event => widget.event;
 
   bool get isOrganizer {
+    if (!AuthService.isLoggedIn) return false;
     final user = AuthService.currentUser;
     final currentUserId = user?.id ?? '';
     final currentUserName = (user?.name ?? '').trim().toLowerCase();
@@ -41,10 +43,42 @@ class _EventDetailPageState extends State<EventDetailPage> {
          organizer.contains('coordinator'));
   }
 
-  bool get isRegistered => isOrganizer || _regService.isRegistered(event.id);
-  bool get isInCalendar => _regService.isInCalendar(event.id);
+  bool get isRegistered => AuthService.isLoggedIn && (isOrganizer || _regService.isRegistered(event.id));
+  bool get isInCalendar => AuthService.isLoggedIn && _regService.isInCalendar(event.id);
+
+  Future<void> _handleLoginToJoin(BuildContext ctx) async {
+    await Navigator.of(ctx).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => const LoginScreen(returnAfterLogin: true),
+      ),
+    );
+    if (!mounted) return;
+    setState(() {});
+    if (AuthService.isLoggedIn) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle_rounded, color: Colors.white),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text('Logged in as ${AuthService.currentUser?.name ?? "User"}! You can now join this event.'),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFF10B981),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+    }
+  }
 
   Future<void> _register() async {
+    if (!AuthService.isLoggedIn) {
+      await _handleLoginToJoin(context);
+      return;
+    }
     if (isRegistered || event.isPast) return;
     setState(() => _isRegistering = true);
 
@@ -177,7 +211,23 @@ class _EventDetailPageState extends State<EventDetailPage> {
   }
 
   void _showEventJoinQrCodeModal(BuildContext context) {
-    final joinUrl = 'campusconnect://event?id=${event.id}';
+    final uri = Uri.https(
+      'campusconnect.amrita.edu',
+      '/event',
+      {
+        'id': event.id,
+        'title': event.title,
+        'loc': event.location,
+        'date': event.date.toIso8601String(),
+        'time': event.timeString,
+        if (event.endTimeString != null && event.endTimeString!.isNotEmpty) 'endTime': event.endTimeString!,
+        'cat': event.category,
+        'org': event.organizer,
+        'cap': event.capacity.toString(),
+        'seats': event.availableSeats.toString(),
+      },
+    );
+    final joinUrl = uri.toString();
 
     showDialog(
       context: context,
@@ -351,11 +401,25 @@ class _EventDetailPageState extends State<EventDetailPage> {
             backgroundColor: catColor,
             iconTheme: const IconThemeData(color: Colors.white),
             actions: [
-              if (isOrganizer || AuthService.isFaculty)
+              if (isOrganizer || (AuthService.isLoggedIn && AuthService.isFaculty))
                 IconButton(
                   icon: const Icon(Icons.qr_code_2_rounded, color: Colors.white),
                   tooltip: 'Show Join QR Code for Students',
                   onPressed: () => _showEventJoinQrCodeModal(context),
+                ),
+              if (!AuthService.isLoggedIn)
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: TextButton.icon(
+                    onPressed: () => _handleLoginToJoin(context),
+                    icon: const Icon(Icons.login_rounded, color: Colors.white, size: 18),
+                    label: const Text('Log In', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.white.withValues(alpha: 0.2),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    ),
+                  ),
                 ),
             ],
             flexibleSpace: FlexibleSpaceBar(
@@ -422,6 +486,56 @@ class _EventDetailPageState extends State<EventDetailPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Guest / Unauthenticated Notice Banner
+                  if (!AuthService.isLoggedIn) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.info_outline_rounded, color: AppColors.primary, size: 22),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Viewing as Guest',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 13,
+                                    color: AppColors.text(context),
+                                  ),
+                                ),
+                                Text(
+                                  'Explore event details below. Log in anytime to join & register.',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.subtext(context),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () => _handleLoginToJoin(context),
+                            style: TextButton.styleFrom(
+                              foregroundColor: AppColors.primary,
+                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                            ),
+                            child: const Text('Log In', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+
                   // Organizer Notice Banner
                   if (isOrganizer) ...[
                     Container(
@@ -697,6 +811,22 @@ class _EventDetailPageState extends State<EventDetailPage> {
                 child: const Text(
                   'Registration Closed — Full',
                   style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.error),
+                ),
+              )
+            else if (!AuthService.isLoggedIn)
+              ElevatedButton.icon(
+                onPressed: () => _handleLoginToJoin(context),
+                icon: const Icon(Icons.login_rounded, size: 20),
+                label: const Text(
+                  'LOG IN TO JOIN EVENT',
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, letterSpacing: 0.5),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  elevation: 2,
                 ),
               )
             else

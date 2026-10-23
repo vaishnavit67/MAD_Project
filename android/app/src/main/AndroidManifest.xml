@@ -47,6 +47,9 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https" android:host="campusconnect.amrita.edu" android:pathPrefix="/event" />
+                <data android:scheme="http" android:host="campusconnect.amrita.edu" android:pathPrefix="/event" />
+                <data android:scheme="https" android:host="campusconnect.app" android:pathPrefix="/event" />
+                <data android:scheme="http" android:host="campusconnect.app" android:pathPrefix="/event" />
             </intent-filter>
         </activity>
         <!-- Google Maps Platform API Key -->

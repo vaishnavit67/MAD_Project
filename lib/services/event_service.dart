@@ -55,6 +55,23 @@ class EventService {
     return [];
   }
 
+  /// Get a single event by ID from MongoDB Atlas backend
+  Future<Event?> getEventById(String eventId) async {
+    try {
+      final uri = Uri.parse('$_baseUrl/$eventId');
+      final response = await http.get(uri, headers: _headers()).timeout(const Duration(seconds: 3));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['event'] != null) {
+          return Event.fromJson(data['event'] as Map<String, dynamic>);
+        }
+      }
+    } catch (e) {
+      debugPrint('[EventService getEventById Error]: $e');
+    }
+    return null;
+  }
+
   /// Create a new campus event (Faculty only)
   Future<Event?> createEvent({
     required String title,

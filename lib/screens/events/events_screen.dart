@@ -12,6 +12,8 @@ import 'event_registration_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/event_service.dart';
 import '../../services/image_upload_service.dart';
+import '../../services/deep_link_service.dart';
+import 'qr_scanner_screen.dart';
 
 // ── Category helpers (also imported by EventDetailPage) ─────────────────────
 
@@ -264,11 +266,47 @@ class _EventsScreenState extends State<EventsScreen>
               ],
             ),
             const SizedBox(height: 18),
+            // 1. LIVE CAMERA QR SCANNER
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.pop(sheetCtx);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const QrScannerScreen()),
+                );
+              },
+              icon: const Icon(Icons.camera_alt_rounded, size: 20),
+              label: const Text(
+                'OPEN LIVE CAMERA SCANNER',
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              ),
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(child: Divider(color: Colors.grey.shade300)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Text(
+                    'OR PASTE EVENT LINK',
+                    style: TextStyle(fontSize: 11, color: AppColors.subtext(context), fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Expanded(child: Divider(color: Colors.grey.shade300)),
+              ],
+            ),
+            const SizedBox(height: 14),
             TextField(
               controller: codeCtrl,
               style: TextStyle(color: AppColors.text(context)),
               decoration: InputDecoration(
-                hintText: 'Paste event link or code (campusconnect://...)',
+                hintText: 'Paste event link or code (https://... / campusconnect://...)',
                 hintStyle: TextStyle(color: AppColors.subtext(context), fontSize: 13),
                 filled: true,
                 fillColor: AppColors.bg(context),
@@ -288,34 +326,23 @@ class _EventsScreenState extends State<EventsScreen>
             ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
-              onPressed: () {
+              onPressed: () async {
                 final text = codeCtrl.text.trim();
-                Event? match;
-                if (text.isNotEmpty) {
-                  final uri = Uri.tryParse(text);
-                  final idFromQuery = uri?.queryParameters['id'] ?? text;
-                  match = _eventsList.firstWhere(
-                    (e) => e.id.toLowerCase() == idFromQuery.toLowerCase() ||
-                           e.title.toLowerCase().contains(text.toLowerCase()),
-                    orElse: () => _eventsList.first,
-                  );
-                } else if (_eventsList.isNotEmpty) {
-                  match = _eventsList.first;
-                }
-
-                if (match != null) {
-                  Navigator.pop(sheetCtx);
-                  _openEvent(match);
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('No matching campus event found for this code.')),
-                  );
+                if (text.isEmpty) return;
+                Navigator.pop(sheetCtx);
+                final handled = await DeepLinkService.instance.handleLink(text);
+                if (!handled) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('No matching campus event found for this code.')),
+                    );
+                  }
                 }
               },
               icon: const Icon(Icons.event_available_rounded, size: 18),
               label: const Text('VIEW & JOIN EVENT', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
+                backgroundColor: const Color(0xFF1565C0),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),

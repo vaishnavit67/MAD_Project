@@ -103,7 +103,24 @@ router.get('/my-registrations', requireAuth, async (req, res) => {
  */
 router.get('/:id', optionalAuth, async (req, res) => {
   try {
-    const event = await Event.findById(req.params.id);
+    const { id } = req.params;
+    const mongoose = require('mongoose');
+    let event = null;
+
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      event = await Event.findById(id);
+    }
+
+    if (!event) {
+      event = await Event.findOne({
+        $or: [
+          { _id: mongoose.Types.ObjectId.isValid(id) ? id : null },
+          { id: id },
+          { title: { $regex: new RegExp(`^${id}$`, 'i') } },
+        ].filter(Boolean),
+      });
+    }
+
     if (!event) {
       return res.status(404).json({
         success: false,

@@ -6,6 +6,7 @@ import '../../services/auth_service.dart';
 import '../home/main_shell.dart';
 import '../onboarding/onboarding_screen.dart';
 import '../auth/login_screen.dart';
+import '../../services/deep_link_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -26,7 +27,7 @@ class _SplashScreenState extends State<SplashScreen> {
     final savedUser = await AuthService.restoreSession();
 
     // 2. Smooth branded animation duration
-    await Future.delayed(const Duration(milliseconds: 1400));
+    await Future.delayed(const Duration(milliseconds: 1200));
 
     if (!mounted) return;
 
@@ -36,6 +37,9 @@ class _SplashScreenState extends State<SplashScreen> {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const MainShell()),
       );
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        DeepLinkService.instance.checkAndOpenPendingEvent();
+      });
       return;
     }
 
@@ -54,6 +58,10 @@ class _SplashScreenState extends State<SplashScreen> {
         MaterialPageRoute(builder: (_) => const OnboardingScreen()),
       );
     }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      DeepLinkService.instance.checkAndOpenPendingEvent();
+    });
   }
 
   @override

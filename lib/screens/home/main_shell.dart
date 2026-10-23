@@ -6,6 +6,7 @@ import '../events/events_screen.dart';
 import '../../features/calendar/screens/calendar_screen.dart';
 import '../../features/tasks/screens/tasks_screen.dart';
 import '../../services/auth_service.dart';
+import '../../services/deep_link_service.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -16,6 +17,14 @@ class MainShell extends StatefulWidget {
 
 class _MainShellState extends State<MainShell> {
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      DeepLinkService.instance.checkAndOpenPendingEvent();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

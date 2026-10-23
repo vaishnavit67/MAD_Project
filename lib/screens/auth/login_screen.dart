@@ -8,13 +8,16 @@ import '../../widgets/app_button.dart';
 import '../../widgets/app_text_field.dart';
 import '../home/main_shell.dart';
 import 'signup_screen.dart';
+import '../../services/deep_link_service.dart';
 
 class LoginScreen extends StatefulWidget {
   final String? initialIdentity;
+  final bool returnAfterLogin;
 
   const LoginScreen({
     super.key,
     this.initialIdentity,
+    this.returnAfterLogin = false,
   });
 
   @override
@@ -42,6 +45,12 @@ class _LoginScreenState extends State<LoginScreen> {
     _identityController = TextEditingController(text: widget.initialIdentity ?? '');
     _identityController.addListener(_onIdentityChanged);
     _loadSavedPreferences();
+
+    if (!widget.returnAfterLogin) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        DeepLinkService.instance.checkAndOpenPendingEvent();
+      });
+    }
   }
 
   Future<void> _loadSavedPreferences() async {
@@ -71,11 +80,17 @@ class _LoginScreenState extends State<LoginScreen> {
     final text = _identityController.text.trim().toLowerCase();
     if (text.isEmpty) return;
 
-    if (text.contains('@cb.amrita.edu') || (text.contains('@amrita.edu') && !text.contains('student'))) {
+    if (text.contains('@cb.amrita.edu') ||
+        (text.contains('@amrita.edu') && !text.contains('student')) ||
+        text.startsWith('emp') ||
+        text.startsWith('fac')) {
       if (_selectedRole != 'Faculty') {
         setState(() => _selectedRole = 'Faculty');
       }
-    } else if (text.contains('student') || text.startsWith('cb.sc.') || text.startsWith('cb.en.')) {
+    } else if (text.contains('student') ||
+        text.startsWith('cb.sc.') ||
+        text.startsWith('cb.en.') ||
+        text.contains('.students.')) {
       if (_selectedRole != 'Student') {
         setState(() => _selectedRole = 'Student');
       }
@@ -162,17 +177,96 @@ class _LoginScreenState extends State<LoginScreen> {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
+
+        if (widget.returnAfterLogin && Navigator.of(context).canPop()) {
+          Navigator.of(context).pop(true);
+          return;
+        }
+
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const MainShell()),
         );
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          DeepLinkService.instance.checkAndOpenPendingEvent();
+        });
       } else {
-        // Automatically switch role tab if backend indicates account belongs to another role
+        // Automatically switch role tab if account belongs to another role
+        String? targetRole;
         if (result.message.contains('registered as Faculty')) {
-          setState(() => _selectedRole = 'Faculty');
+          targetRole = 'Faculty';
         } else if (result.message.contains('registered as Student')) {
-          setState(() => _selectedRole = 'Student');
+          targetRole = 'Student';
         } else if (result.message.contains('registered as Visitor')) {
-          setState(() => _selectedRole = 'Visitor');
+          targetRole = 'Visitor';
+        }
+
+        if (targetRole != null && targetRole != _selectedRole) {
+          setState(() => _selectedRole = targetRole!);
+          // Automatically retry login under the detected role!
+          final retryResult = await _authService.signInUser(
+            identity: identity,
+            password: password,
+            role: targetRole,
+          );
+
+          if (retryResult.success) {
+            await AuthService.saveLoginPreferences(
+              identity: identity,
+              role: targetRole,
+              rememberMe: _rememberMe,
+            );
+            await AuthService.setOnboardingCompleted();
+
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Row(
+                  children: [
+                    const Icon(Icons.check_circle_rounded, color: Colors.white),
+                    const SizedBox(width: 10),
+                    Expanded(child: Text('Detected $targetRole account! Logged in successfully.')),
+                  ],
+                ),
+                backgroundColor: const Color(0xFF10B981),
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            );
+
+            if (widget.returnAfterLogin && Navigator.of(context).canPop()) {
+              Navigator.of(context).pop(true);
+              return;
+            }
+
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const MainShell()),
+            );
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              DeepLinkService.instance.checkAndOpenPendingEvent();
+            });
+            return;
+          } else {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Row(
+                  children: [
+                    const Icon(Icons.info_outline_rounded, color: Colors.white),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Detected account in $targetRole! Switched tab. ${retryResult.message}',
+                      ),
+                    ),
+                  ],
+                ),
+                backgroundColor: AppColors.error,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            );
+            return;
+          }
         }
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -353,7 +447,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: _identityController,
                   hintText: _getIdentityHint(),
                   prefixIcon: const Icon(Icons.person_outline),
-                  validator: (val) => FormValidators.validateLoginIdentityForRole(val ?? '', _selectedRole),
+                  validator: (val) => FormValidators.validateLoginIdentity(val ?? ''),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(left: 4, top: 4),

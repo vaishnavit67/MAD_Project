@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:mongo_dart/mongo_dart.dart';
+import 'package:hive/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
 import '../utils/validators.dart';
@@ -41,11 +42,13 @@ class MongoDbService {
     defaultValue: 'mongodb://127.0.0.1:27017/campus_connect',
   );
 
-  static const String primaryLaptopIp = '10.12.252.91';
+  static const String primaryLaptopIp = '10.12.86.243';
   static const List<String> candidateUrls = [
-    'http://10.12.252.91:5000', // Wi-Fi Laptop LAN IP
-    'http://127.0.0.1:5000',    // Physical device via adb reverse
+    'http://127.0.0.1:5000',    // Physical device via adb reverse (fastest & most reliable)
+    'http://10.12.86.243:5000', // Wi-Fi Laptop LAN IP
+    'http://10.12.252.91:5000', // Previous Wi-Fi IP
     'http://10.0.2.2:5000',     // Android emulator
+    'http://localhost:5000',    // Localhost / Web
   ];
 
   /// Default Node.js Express backend URL
@@ -55,7 +58,7 @@ class MongoDbService {
 
     if (kIsWeb) return 'http://localhost:5000';
     if (defaultTargetPlatform == TargetPlatform.android) {
-      return 'http://10.12.252.91:5000';
+      return 'http://127.0.0.1:5000';
     }
     return 'http://127.0.0.1:5000';
   }
@@ -160,8 +163,86 @@ class MongoDbService {
     } catch (_) {}
   }
 
+  static const String _hiveUsersBox = 'cached_mongodb_users_box';
+
+  /// Load cached users from Hive into memory tables
+  Future<void> _loadCachedUsersFromHive() async {
+    try {
+      final box = await Hive.openBox<dynamic>(_hiveUsersBox);
+      for (final table in allTables) {
+        final rawList = box.get(table);
+        if (rawList is List) {
+          final users = rawList
+              .map((m) => UserModel.fromMap(Map<String, dynamic>.from(m as Map)))
+              .toList();
+          for (final u in users) {
+            final existingIndex = _inMemoryTables[table]
+                    ?.indexWhere((x) => x.email.toLowerCase() == u.email.toLowerCase()) ??
+                -1;
+            if (existingIndex >= 0) {
+              _inMemoryTables[table]?[existingIndex] = u;
+            } else {
+              _inMemoryTables[table]?.add(u);
+            }
+          }
+        }
+      }
+      debugPrint('[MongoDbService] Successfully loaded cached users from Hive.');
+    } catch (e) {
+      debugPrint('[MongoDbService] Hive users load notice: $e');
+    }
+  }
+
+  /// Persist in-memory tables to Hive binary storage for offline account detection
+  Future<void> _persistUsersToHive() async {
+    try {
+      final box = await Hive.openBox<dynamic>(_hiveUsersBox);
+      for (final table in allTables) {
+        final users = _inMemoryTables[table] ?? [];
+        final maps = users.map((u) => u.toMap()).toList();
+        await box.put(table, maps);
+      }
+      await box.flush();
+    } catch (e) {
+      debugPrint('[MongoDbService] Hive users persist notice: $e');
+    }
+  }
+
+  /// Synchronize all registered accounts from backend into local Hive cache
+  Future<void> syncAllUsersFromBackend() async {
+    if (!await checkBackendAvailable()) return;
+    try {
+      for (final role in ['Student', 'Faculty', 'Visitor']) {
+        final table = getCollectionNameForRole(role);
+        final uri = Uri.parse('$_backendUrl/api/auth/users/$role');
+        final response = await http.get(uri).timeout(const Duration(milliseconds: 2000));
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          if (data['success'] == true && data['users'] is List) {
+            for (final uMap in (data['users'] as List)) {
+              final user = UserModel.fromMap(Map<String, dynamic>.from(uMap as Map));
+              final existingIndex = _inMemoryTables[table]
+                      ?.indexWhere((x) => x.email.toLowerCase() == user.email.toLowerCase()) ??
+                  -1;
+              if (existingIndex >= 0) {
+                _inMemoryTables[table]?[existingIndex] = user;
+              } else {
+                _inMemoryTables[table]?.add(user);
+              }
+            }
+          }
+        }
+      }
+      await _persistUsersToHive();
+      debugPrint('[MongoDbService] Successfully synchronized all MongoDB Atlas users to device cache.');
+    } catch (_) {}
+  }
+
   /// Connect to MongoDB with timeout guard and load saved backend URL
   Future<bool> initialize({Duration timeout = const Duration(seconds: 3)}) async {
+    // 1. Load locally cached users from Hive immediately so accounts exist offline
+    await _loadCachedUsersFromHive();
+
     try {
       final prefs = await SharedPreferences.getInstance();
       final savedUrl = prefs.getString('backend_server_url');
@@ -179,6 +260,9 @@ class MongoDbService {
     try {
       await probeAndSelectBackendUrl(force: true).timeout(const Duration(milliseconds: 1500));
     } catch (_) {}
+
+    // Synchronize latest Atlas users in background
+    unawaited(syncAllUsersFromBackend());
 
     if (kIsWeb) {
       debugPrint('[MongoDB] Running on Flutter Web: Using Node.js REST API backend ($backendUrl)');
@@ -423,6 +507,7 @@ class MongoDbService {
               );
             }
             _inMemoryTables[targetTable]?.add(createdUser);
+            await _persistUsersToHive();
           }
           return AuthResult(
             success: true,
@@ -482,8 +567,9 @@ class MongoDbService {
       }
     }
 
-    // 7. Update in-memory synchronization store
+    // 7. Update in-memory synchronization store and persistent local Hive cache
     _inMemoryTables[targetTable]?.add(newUser);
+    await _persistUsersToHive();
 
     return AuthResult(
       success: true,
@@ -611,7 +697,7 @@ class MongoDbService {
         if (cleanIdentity.contains('@')) {
           doc = await col.findOne(where.eq('email', cleanIdentity));
         } else if (digitsOnly.length >= 10) {
-          doc = await col.findOne(where.eq('phone', tenDigitPhone));
+          doc = await col.findOne(where.match('phone', '${RegExp.escape(tenDigitPhone)}\$'));
         }
         
         // Check rollNumber / campus ID
@@ -631,8 +717,11 @@ class MongoDbService {
       if (user.email.toLowerCase() == cleanIdentity) {
         return user;
       }
-      if (digitsOnly.length >= 10 && user.phone.replaceAll(RegExp(r'\D'), '') == tenDigitPhone) {
-        return user;
+      if (digitsOnly.length >= 10) {
+        final uPhone = user.phone.replaceAll(RegExp(r'\D'), '');
+        if (uPhone == tenDigitPhone || uPhone.endsWith(tenDigitPhone)) {
+          return user;
+        }
       }
       if (user.rollNumber.toLowerCase() == rawIdentity.toLowerCase()) {
         return user;
@@ -667,19 +756,21 @@ class MongoDbService {
   Future<UserModel?> findUserByPhone(String phone) async {
     final cleanPhone = phone.replaceAll(RegExp(r'\D'), '');
     if (cleanPhone.isEmpty) return null;
+    final tenDigitPhone = cleanPhone.length >= 10 ? cleanPhone.substring(cleanPhone.length - 10) : cleanPhone;
 
     for (final table in allTables) {
       if (isConnected && _db != null) {
         try {
           final col = _db!.collection(table);
-          final doc = await col.findOne(where.eq('phone', cleanPhone));
+          final doc = await col.findOne(where.match('phone', '${RegExp.escape(tenDigitPhone)}\$'));
           if (doc != null) return UserModel.fromMap(doc);
         } catch (_) {}
       }
 
       final inMem = _inMemoryTables[table] ?? [];
       for (final u in inMem) {
-        if (u.phone.replaceAll(RegExp(r'\D'), '') == cleanPhone) return u;
+        final uPhone = u.phone.replaceAll(RegExp(r'\D'), '');
+        if (uPhone == tenDigitPhone || uPhone.endsWith(tenDigitPhone)) return u;
       }
     }
     return null;

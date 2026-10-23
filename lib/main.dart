@@ -16,6 +16,7 @@ import 'features/calendar/services/event_service.dart';
 import 'features/calendar/services/class_service.dart';
 import 'features/tasks/services/task_service.dart';
 import 'screens/events/event_registration_service.dart';
+import 'services/deep_link_service.dart';
 import 'screens/splash/splash_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/signup_screen.dart';
@@ -135,6 +136,10 @@ class CampusConnectApp extends StatefulWidget {
   final ThemeMode initialThemeMode;
   const CampusConnectApp({super.key, this.initialThemeMode = ThemeMode.light});
 
+  /// Global keys for navigation & SnackBars (used by DeepLinkService)
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  static final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+
   /// Global key so Settings can toggle theme mode
   static final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
 
@@ -147,6 +152,10 @@ class _CampusConnectAppState extends State<CampusConnectApp> {
   void initState() {
     super.initState();
     CampusConnectApp.themeNotifier.value = widget.initialThemeMode;
+    DeepLinkService.instance.init(
+      navKey: CampusConnectApp.navigatorKey,
+      messengerKey: CampusConnectApp.scaffoldMessengerKey,
+    );
   }
 
   @override
@@ -155,6 +164,8 @@ class _CampusConnectAppState extends State<CampusConnectApp> {
       valueListenable: CampusConnectApp.themeNotifier,
       builder: (_, themeMode, _) {
         return MaterialApp(
+          navigatorKey: CampusConnectApp.navigatorKey,
+          scaffoldMessengerKey: CampusConnectApp.scaffoldMessengerKey,
           debugShowCheckedModeBanner: false,
           title: AppConstants.appName,
           theme: AppTheme.lightTheme,

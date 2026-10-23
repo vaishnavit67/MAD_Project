@@ -152,9 +152,8 @@ function loginValidator(req, res, next) {
     });
   }
 
-  const cleanRole = role.trim();
-
-  const idErr = validateLoginIdentityForRole(identity, cleanRole);
+  // Use general identity format check during login so accounts can be detected across all role tables
+  const idErr = validateLoginIdentityForRole(identity, '');
   if (idErr) return res.status(400).json({ success: false, message: idErr });
 
   if (!password) {
