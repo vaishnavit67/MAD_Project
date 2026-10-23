@@ -2,13 +2,19 @@ import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import '../models/event_model.dart';
 import '../../notifications/services/notification_service.dart';
+import '../../../../services/auth_service.dart';
 
 class EventService {
   static final EventService _instance = EventService._internal();
   factory EventService() => _instance;
   EventService._internal();
 
-  static const String _boxName = 'events_box';
+  String get _userScope =>
+      AuthService.currentUser?.id ??
+      AuthService.currentUser?.email.replaceAll(RegExp(r'\W'), '_') ??
+      'guest_${AuthService.currentRole.toLowerCase()}';
+
+  String get _boxName => 'calendar_events_box_$_userScope';
   Box<Map<dynamic, dynamic>>? _box;
   final Map<String, Map<dynamic, dynamic>> _fallbackEvents = {};
   final NotificationService _notificationService = NotificationService();
@@ -21,9 +27,24 @@ class EventService {
     }
   }
 
+  /// Switch active Hive box when logged in user changes
+  Future<void> switchUserScope() async {
+    try {
+      _box = await Hive.openBox<Map<dynamic, dynamic>>(_boxName);
+    } catch (_) {}
+  }
+
   List<EventModel> getEvents() {
     final values = _box?.values ?? _fallbackEvents.values;
-    return values.map((map) => EventModel.fromMap(map)).toList();
+    final results = <EventModel>[];
+    for (final map in values) {
+      try {
+        results.add(EventModel.fromMap(map));
+      } catch (e) {
+        debugPrint('[EventService] Corrupted event skipped: $e');
+      }
+    }
+    return results;
   }
 
   Future<void> addEvent(EventModel event) async {

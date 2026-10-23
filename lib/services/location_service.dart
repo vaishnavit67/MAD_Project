@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 import '../models/campus_location.dart';
 import '../utils/constants.dart';
@@ -15,13 +14,6 @@ enum LocationPermissionStatus {
 }
 
 class LocationService {
-  FirebaseFirestore? get _firestore {
-    try {
-      return FirebaseFirestore.instance;
-    } catch (_) {
-      return null;
-    }
-  }
 
   /// Check detailed location permission and service status
   Future<LocationPermissionStatus> checkLocationPermissionStatus() async {
@@ -152,24 +144,7 @@ class LocationService {
       // Backend not running or timeout; fallback
     }
 
-    // 2. Direct Firestore fallback (legacy)
-    final firestore = _firestore;
-    if (firestore != null) {
-      try {
-        final snapshot = await firestore
-            .collection('locations')
-            .get()
-            .timeout(const Duration(seconds: 2));
-
-        if (snapshot.docs.isNotEmpty) {
-          return snapshot.docs.map((doc) {
-            return CampusLocation.fromMap(doc.data(), doc.id);
-          }).toList();
-        }
-      } catch (_) {}
-    }
-
-    // 3. Constant fallback
+    // 2. Default Campus POI Constants fallback
     return campusLocations;
   }
 

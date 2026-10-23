@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
+import 'package:http/http.dart' as http;
 import '../../../features/calendar/models/event_model.dart';
 import '../../../features/calendar/services/event_service.dart';
 import '../../../features/notifications/services/notification_service.dart';
@@ -7,18 +9,24 @@ import '../../../features/notifications/services/in_app_notification_service.dar
 import '../../../features/notifications/models/notification_model.dart';
 import '../../../data/mock_data.dart';
 import '../../../models/event.dart';
+import '../../../services/auth_service.dart';
+import '../../../services/mongodb_service.dart';
 import 'dart:math';
 
-/// Manages student event registration state locally using Hive with memory fallback.
-/// Designed so the local implementation can be replaced by Firebase later
-/// without changing the UI layer.
+/// Manages user-specific event registrations backed by MongoDB Atlas
+/// with role-isolated on-device caching.
 class EventRegistrationService {
   static final EventRegistrationService _instance =
       EventRegistrationService._internal();
   factory EventRegistrationService() => _instance;
   EventRegistrationService._internal();
 
-  static const String _boxName = 'event_registrations_box';
+  String get _userScope =>
+      AuthService.currentUser?.id ??
+      AuthService.currentUser?.email.replaceAll(RegExp(r'\W'), '_') ??
+      'guest_${AuthService.currentRole.toLowerCase()}';
+
+  String get _boxName => 'event_registrations_box_$_userScope';
   static const String _registeredKey = 'registered_ids';
   static const String _calendarKey = 'calendar_ids';
 
@@ -27,12 +35,56 @@ class EventRegistrationService {
   final EventService _calendarEventService = EventService();
   final NotificationService _notificationService = NotificationService();
 
+  String get _baseUrl => '${MongoDbService.instance.backendUrl}/api/events';
+
+  Map<String, String> _headers([String? token]) {
+    final effectiveToken = token ?? AuthService.effectiveToken;
+    return {
+      'Content-Type': 'application/json',
+      if (effectiveToken.isNotEmpty) 'Authorization': 'Bearer $effectiveToken',
+    };
+  }
+
   Future<void> init() async {
     try {
       _box = await Hive.openBox<dynamic>(_boxName);
+      fetchUserRegistrations();
     } catch (e) {
-      debugPrint('[EventRegistrationService] Hive init notice (using memory fallback): $e');
+      debugPrint('[EventRegistrationService] Hive init notice: $e');
+      fetchUserRegistrations();
     }
+  }
+
+  /// Switch active Hive box when logged in user changes
+  Future<void> switchUserScope() async {
+    try {
+      _box = await Hive.openBox<dynamic>(_boxName);
+      await fetchUserRegistrations();
+    } catch (_) {}
+  }
+
+  /// Fetch user-specific event registrations from MongoDB backend
+  Future<Set<String>> fetchUserRegistrations() async {
+    try {
+      final uri = Uri.parse('$_baseUrl/my-registrations');
+      final response = await http
+          .get(uri, headers: _headers())
+          .timeout(const Duration(milliseconds: 2500));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['registeredIds'] is List) {
+          final Set<String> ids = (data['registeredIds'] as List)
+              .map((e) => e.toString())
+              .toSet();
+          await _saveSet(_registeredKey, ids);
+          return ids;
+        }
+      }
+    } catch (e) {
+      debugPrint('[EventRegistrationService] Notice fetching registrations ($e). Using cached IDs.');
+    }
+    return registeredIds;
   }
 
   // ── Registration state ────────────────────────────────────────────────────
@@ -57,16 +109,19 @@ class EventRegistrationService {
     } catch (_) {}
   }
 
-  bool isRegistered(String eventId) => _getSet(_registeredKey).contains(eventId);
+  bool isRegistered(String eventId) {
+    return _getSet(_registeredKey).contains(eventId);
+  }
 
   bool isInCalendar(String eventId) => _getSet(_calendarKey).contains(eventId);
 
   Set<String> get registeredIds => _getSet(_registeredKey);
 
-  /// Returns all registered [Event]s from MockData sorted by date.
-  List<Event> getRegisteredEvents() {
+  /// Returns all registered [Event]s matching the user's registrations.
+  List<Event> getRegisteredEvents([List<Event>? sourceList]) {
     final ids = _getSet(_registeredKey);
-    return MockData.events
+    final pool = sourceList ?? MockData.events;
+    return pool
         .where((e) => ids.contains(e.id))
         .toList()
       ..sort((a, b) => a.date.compareTo(b.date));
@@ -76,23 +131,19 @@ class EventRegistrationService {
 
   Future<void> register(Event event) async {
     final ids = _getSet(_registeredKey);
-    if (ids.contains(event.id)) return; // already registered
     ids.add(event.id);
     await _saveSet(_registeredKey, ids);
     _scheduleReminders(event);
 
-    final index = MockData.events.indexWhere((e) => e.id == event.id);
-    if (index != -1) {
-      final current = MockData.events[index];
-      MockData.events[index] = current.copyWith(
-        participantCount: current.participantCount + 1,
-        availableSeats: current.availableSeats > 0 ? current.availableSeats - 1 : 0,
-      );
-    }
+    // Sync registration to MongoDB backend
+    try {
+      final uri = Uri.parse('$_baseUrl/${event.id}/register');
+      await http.post(uri, headers: _headers());
+    } catch (_) {}
 
-    // Create in-app notification
+    // Add in-app notification
     await InAppNotificationService().addNotification(NotificationModel(
-      id: 'event_registered_${event.id}',
+      id: 'event_registered_${event.id}_${DateTime.now().millisecondsSinceEpoch}',
       title: 'Event Registered 🎉',
       message: 'You successfully registered for ${event.title}.',
       timestamp: DateTime.now(),
@@ -108,14 +159,11 @@ class EventRegistrationService {
     regIds.remove(event.id);
     await _saveSet(_registeredKey, regIds);
 
-    final index = MockData.events.indexWhere((e) => e.id == event.id);
-    if (index != -1) {
-      final current = MockData.events[index];
-      MockData.events[index] = current.copyWith(
-        participantCount: current.participantCount > 0 ? current.participantCount - 1 : 0,
-        availableSeats: current.availableSeats + 1,
-      );
-    }
+    // Sync unregistration to MongoDB backend
+    try {
+      final uri = Uri.parse('$_baseUrl/${event.id}/unregister');
+      await http.post(uri, headers: _headers());
+    } catch (_) {}
 
     // Also remove from calendar
     if (isInCalendar(event.id)) {
@@ -131,16 +179,15 @@ class EventRegistrationService {
   // ── Calendar integration ──────────────────────────────────────────────────
 
   Future<void> addToCalendar(Event event) async {
-    if (isInCalendar(event.id)) return; // prevent duplicates
+    if (isInCalendar(event.id)) return;
 
-    // Parse time strings to build DateTime
     final startDt = _parseDt(event.date, event.timeString);
     final endDt = event.endTimeString != null
         ? _parseDt(event.date, event.endTimeString!)
         : startDt.add(const Duration(hours: 1));
 
     final calEvent = EventModel(
-      id: 'disc_${event.id}', // prefix to avoid collision with user-created events
+      id: 'disc_${event.id}',
       title: event.title,
       description: event.description,
       startDateTime: startDt,
@@ -175,7 +222,6 @@ class EventRegistrationService {
     final startDt = _parseDt(event.date, event.timeString);
     final notifBase = event.id.hashCode.abs() % 900000 + 100000;
 
-    // 1-day reminder
     final oneDayBefore = startDt.subtract(const Duration(days: 1));
     _notificationService.scheduleNotification(
       id: notifBase,
@@ -184,7 +230,6 @@ class EventRegistrationService {
       scheduledTime: oneDayBefore,
     );
 
-    // 30-min reminder
     final thirtyMinBefore = startDt.subtract(const Duration(minutes: 30));
     _notificationService.scheduleNotification(
       id: notifBase + 1,
@@ -194,9 +239,6 @@ class EventRegistrationService {
     );
   }
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
-
-  /// Parse a 12-hr time string like "10:00 AM" into a DateTime on [date].
   static DateTime _parseDt(DateTime date, String timeStr) {
     try {
       final clean = timeStr.trim().toUpperCase();

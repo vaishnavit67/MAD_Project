@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 const LostFound = require('../models/LostFound');
 const LostFoundClaim = require('../models/LostFoundClaim');
+const {
+  sendLostItemReportConfirmation,
+  sendLostItemClaimNotification,
+  sendClaimStatusNotification,
+} = require('../services/emailService');
 
 /**
  * Validates MongoDB ObjectId
@@ -183,6 +188,15 @@ exports.createItem = async (req, res) => {
       ownerName: finalOwnerName,
       status: 'active',
     });
+
+    // Send confirmation email asynchronously
+    sendLostItemReportConfirmation({
+      userEmail: (req.user && req.user.email) || req.body.ownerEmail,
+      userName: finalOwnerName,
+      itemTitle: newItem.title,
+      itemType: newItem.type,
+      location: newItem.location,
+    }).catch((e) => console.error('[Email Notice]:', e.message));
 
     return res.status(201).json({
       success: true,
@@ -386,6 +400,15 @@ exports.createClaim = async (req, res) => {
       status: 'pending',
     });
 
+    // Send claim notification email to item owner asynchronously
+    sendLostItemClaimNotification({
+      ownerEmail: item.ownerEmail || (item.ownerId && item.ownerId.includes('@') ? item.ownerId : null),
+      ownerName: item.ownerName,
+      claimantName: newClaim.claimantName,
+      itemTitle: item.title,
+      claimMessage: newClaim.message,
+    }).catch((e) => console.error('[Email Notice]:', e.message));
+
     return res.status(201).json({
       success: true,
       message: 'Claim request submitted successfully',
@@ -506,6 +529,15 @@ exports.updateClaimStatus = async (req, res) => {
         { status: 'rejected' }
       );
     }
+
+    // Send email to claimant asynchronously
+    sendClaimStatusNotification({
+      claimantEmail: claim.claimantEmail || (claim.claimantId && claim.claimantId.includes('@') ? claim.claimantId : null),
+      claimantName: claim.claimantName,
+      itemTitle: item.title,
+      status: newStatus,
+      ownerName: item.ownerName,
+    }).catch((e) => console.error('[Email Notice]:', e.message));
 
     return res.status(200).json({
       success: true,

@@ -14,6 +14,17 @@ class NotificationsScreen extends StatefulWidget {
 class _NotificationsScreenState extends State<NotificationsScreen> {
   final InAppNotificationService _service = InAppNotificationService();
 
+  @override
+  void initState() {
+    super.initState();
+    _refreshBackend();
+  }
+
+  Future<void> _refreshBackend() async {
+    await _service.fetchNotificationsFromBackend();
+    if (mounted) setState(() {});
+  }
+
   void _markAllAsRead() async {
     await _service.markAllAsRead();
     setState(() {});
@@ -108,14 +119,23 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             ),
         ],
       ),
-      body: notifications.isEmpty
-          ? _emptyState()
-          : ListView.builder(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.only(bottom: 32),
-              itemCount: _buildItemCount(groups),
-              itemBuilder: (_, i) => _buildItem(groups, i),
-            ),
+      body: RefreshIndicator(
+        onRefresh: _refreshBackend,
+        child: notifications.isEmpty
+            ? SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.7,
+                  child: _emptyState(),
+                ),
+              )
+            : ListView.builder(
+                physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+                padding: const EdgeInsets.only(bottom: 32),
+                itemCount: _buildItemCount(groups),
+                itemBuilder: (_, i) => _buildItem(groups, i),
+              ),
+      ),
     );
   }
 

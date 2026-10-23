@@ -8,6 +8,7 @@ import '../../tasks/models/task_model.dart';
 import '../services/event_service.dart';
 import '../../tasks/services/task_service.dart';
 import '../services/class_service.dart';
+import '../../../services/auth_service.dart';
 
 // ─── Calendar color palette ────────────────────────────────────────────────
 class CalColors {
@@ -39,6 +40,20 @@ class _CalendarScreenState extends State<CalendarScreen> {
   DateTime _selectedDay  = DateTime(
       DateTime.now().year, DateTime.now().month, DateTime.now().day);
 
+  @override
+  void initState() {
+    super.initState();
+    _refreshBackend();
+  }
+
+  Future<void> _refreshBackend() async {
+    await Future.wait([
+      _classService.fetchClassesFromBackend(),
+      _taskService.fetchTasksFromBackend(),
+    ]);
+    if (mounted) setState(() {});
+  }
+
   // ── helpers ──────────────────────────────────────────────────────────────
 
   bool _isSameDay(DateTime a, DateTime b) =>
@@ -60,9 +75,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
         items.add(_CalItem.fromTask(t));
       }
     }
-    for (final c in _classService.getClasses()) {
-      if (c.occursOn(day)) {
-        items.add(_CalItem.fromClass(c, day));
+    // Classes are isolated to students and faculty, never visitors
+    if (!AuthService.isVisitor) {
+      for (final c in _classService.getClasses()) {
+        if (c.occursOn(day)) {
+          items.add(_CalItem.fromClass(c, day));
+        }
       }
     }
 
@@ -103,14 +121,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
         : DateFormat('MMM d, yyyy').format(_selectedDay);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.bg(context),
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.bg(context),
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Calendar',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: AppColors.text(context),
             fontWeight: FontWeight.w800,
             fontSize: 22,
           ),
@@ -132,89 +150,146 @@ class _CalendarScreenState extends State<CalendarScreen> {
         icon: const Icon(Icons.add),
         label: const Text('Add', style: TextStyle(fontWeight: FontWeight.w700)),
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.only(bottom: 100),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Monthly Calendar ──────────────────────────────────────────
-            _CalendarWidget(
-              focusedMonth: _focusedMonth,
-              selectedDay: _selectedDay,
-              onPrev: _prevMonth,
-              onNext: _nextMonth,
-              onDayTap: (d) => setState(() => _selectedDay = d),
-              typesForDay: _typesForDay,
-              isToday: _isToday,
-              isSameDay: _isSameDay,
-            ),
-
-            const SizedBox(height: 20),
-
-            // ── Daily Schedule ────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text(
-                selectedLabel,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
+      body: RefreshIndicator(
+        onRefresh: _refreshBackend,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+          padding: const EdgeInsets.only(bottom: 100),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (AuthService.isFaculty)
+                Container(
+                  margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF7C3AED).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFF7C3AED).withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.school_rounded, color: Color(0xFF7C3AED), size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Faculty Timetable: Teaching Schedule, Lectures & Consultation Hours (${AuthService.currentUser?.name ?? "Faculty Lead"})',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.text(context),
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else if (AuthService.isVisitor)
+                Container(
+                  margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.tour_rounded, color: AppColors.primary, size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Visitor Mode: Academic classes are not applicable. Showing campus guest tasks & public events.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.text(context),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text(
-                "Today's Schedule",
-                style: TextStyle(
-                  fontSize: 13,
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            if (selectedItems.isEmpty)
-              _emptyState(context)
-            else
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: selectedItems.length,
-                itemBuilder: (_, i) => _CalItemCard(
-                  item: selectedItems[i],
-                  onTap: () => _showItemDetail(selectedItems[i]),
-                  onComplete: selectedItems[i].type == _ItemType.task
-                      ? () => _toggleTaskComplete(selectedItems[i])
-                      : null,
-                  onDelete: () => _deleteItem(selectedItems[i]),
-                ),
+              // ── Monthly Calendar ──────────────────────────────────────────
+              _CalendarWidget(
+                focusedMonth: _focusedMonth,
+                selectedDay: _selectedDay,
+                onPrev: _prevMonth,
+                onNext: _nextMonth,
+                onDayTap: (d) => setState(() => _selectedDay = d),
+                typesForDay: _typesForDay,
+                isToday: _isToday,
+                isSameDay: _isSameDay,
               ),
 
-            const SizedBox(height: 24),
+              const SizedBox(height: 20),
 
-            // ── Upcoming ──────────────────────────────────────────────────
-            if (upcoming.isNotEmpty) ...[
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
+              // ── Daily Schedule ────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
-                  'Upcoming',
+                  selectedLabel,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
+                    color: AppColors.text(context),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  AuthService.isVisitor
+                      ? "Visitor Schedule & Activities"
+                      : (AuthService.isFaculty ? "Faculty Schedule & Lectures" : "Today's Schedule"),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppColors.subtext(context),
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
               const SizedBox(height: 12),
-              ..._buildUpcomingWidgets(upcoming),
+
+              if (selectedItems.isEmpty)
+                _emptyState(context)
+              else
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: selectedItems.length,
+                  itemBuilder: (_, i) => _CalItemCard(
+                    item: selectedItems[i],
+                    onTap: () => _showItemDetail(selectedItems[i]),
+                    onComplete: selectedItems[i].type == _ItemType.task
+                        ? () => _toggleTaskComplete(selectedItems[i])
+                        : null,
+                    onDelete: () => _deleteItem(selectedItems[i]),
+                  ),
+                ),
+
+              const SizedBox(height: 24),
+
+              // ── Upcoming ──────────────────────────────────────────────────
+              if (upcoming.isNotEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Text(
+                    'Upcoming',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.text(context),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ..._buildUpcomingWidgets(upcoming),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -223,35 +298,38 @@ class _CalendarScreenState extends State<CalendarScreen> {
   // ── Empty state ───────────────────────────────────────────────────────────
 
   Widget _emptyState(BuildContext context) {
+    final isVisitor = AuthService.isVisitor;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.card(context),
           borderRadius: BorderRadius.circular(20),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10)],
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: AppColors.isDark(context) ? 0.2 : 0.04), blurRadius: 10)],
         ),
         padding: const EdgeInsets.all(28),
         child: Column(
           children: [
-            const Text('🎉', style: TextStyle(fontSize: 40)),
+            Text(isVisitor ? '🏛️' : '🎉', style: const TextStyle(fontSize: 40)),
             const SizedBox(height: 12),
-            const Text(
-              'No plans for today',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
+            Text(
+              isVisitor ? 'No visitor activities today' : 'No plans for today',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.text(context)),
             ),
             const SizedBox(height: 6),
-            const Text(
-              'Your schedule is clear. Add something!',
-              style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+            Text(
+              isVisitor
+                  ? 'Your campus itinerary is clear. Explore open events or add a visitor task!'
+                  : 'Your schedule is clear. Add something!',
+              style: TextStyle(fontSize: 13, color: AppColors.subtext(context)),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
             OutlinedButton.icon(
               onPressed: _showAddMenu,
               icon: const Icon(Icons.add, size: 18),
-              label: const Text('Add Task'),
+              label: Text(isVisitor ? 'Add Itinerary Task' : 'Add Task'),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.primary,
                 side: const BorderSide(color: AppColors.primary),
@@ -379,6 +457,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (_) => _AddMenuSheet(
+        isVisitor: AuthService.isVisitor,
         onAddTask: () {
           Navigator.pop(context);
           _showAddTask();
@@ -410,7 +489,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       description: '',
       dueDateTime: result['dueDateTime'] as DateTime,
       priority: result['priority'] as String,
-      category: 'Personal',
+      category: AuthService.isVisitor ? 'Visitor' : (AuthService.isFaculty ? 'Faculty' : 'Personal'),
       reminderMinutes: result['reminder'] == true ? 30 : 0,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
@@ -546,9 +625,9 @@ class _CalendarWidget extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card(context),
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 12, offset: const Offset(0, 4))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: AppColors.isDark(context) ? 0.2 : 0.05), blurRadius: 12, offset: const Offset(0, 4))],
       ),
       padding: const EdgeInsets.fromLTRB(12, 16, 12, 12),
       child: Column(
@@ -558,22 +637,22 @@ class _CalendarWidget extends StatelessWidget {
             children: [
               IconButton(
                 onPressed: onPrev,
-                icon: const Icon(Icons.chevron_left_rounded, color: AppColors.textPrimary),
+                icon: Icon(Icons.chevron_left_rounded, color: AppColors.text(context)),
               ),
               Expanded(
                 child: Text(
                   DateFormat('MMMM yyyy').format(focusedMonth),
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 16,
-                    color: AppColors.textPrimary,
+                    color: AppColors.text(context),
                   ),
                 ),
               ),
               IconButton(
                 onPressed: onNext,
-                icon: const Icon(Icons.chevron_right_rounded, color: AppColors.textPrimary),
+                icon: Icon(Icons.chevron_right_rounded, color: AppColors.text(context)),
               ),
             ],
           ),
@@ -590,7 +669,7 @@ class _CalendarWidget extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textSecondary,
+                          color: AppColors.subtext(context),
                         ),
                       ),
                     ))
@@ -623,7 +702,7 @@ class _CalendarWidget extends StatelessWidget {
                         color: selectedFlag
                             ? AppColors.primary
                             : todayFlag
-                                ? AppColors.featureIconBg1
+                                ? (AppColors.isDark(context) ? const Color(0xFF312E81) : AppColors.featureIconBg1)
                                 : Colors.transparent,
                         borderRadius: BorderRadius.circular(10),
                         border: todayFlag && !selectedFlag
@@ -642,7 +721,7 @@ class _CalendarWidget extends StatelessWidget {
                                   ? Colors.white
                                   : todayFlag
                                       ? AppColors.primary
-                                      : AppColors.textPrimary,
+                                      : AppColors.text(context),
                             ),
                           ),
                           if (types.isNotEmpty)
@@ -748,15 +827,18 @@ class _CalItem {
         endTime: c.endDateTimeOn(day),
       );
 
-  static String _fmtTime(String hhmm) {
+  static String _fmtTime(String timeStr) {
+    if (timeStr.contains('AM') || timeStr.contains('PM')) {
+      return timeStr;
+    }
     try {
-      final parts = hhmm.split(':');
+      final parts = timeStr.split(':');
       final h = int.parse(parts[0]);
       final m = int.parse(parts[1]);
       final dt = DateTime(2000, 1, 1, h, m);
       return DateFormat.jm().format(dt);
     } catch (_) {
-      return hhmm;
+      return timeStr;
     }
   }
 
@@ -821,9 +903,9 @@ class _CalItemCard extends StatelessWidget {
     return Container(
       margin: EdgeInsets.only(bottom: compact ? 8 : 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card(context),
         borderRadius: BorderRadius.circular(14),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 3))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: AppColors.isDark(context) ? 0.2 : 0.04), blurRadius: 8, offset: const Offset(0, 3))],
       ),
       child: Material(
         color: Colors.transparent,
@@ -868,7 +950,7 @@ class _CalItemCard extends StatelessWidget {
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: compact ? 14 : 15,
-                          color: AppColors.textPrimary,
+                          color: AppColors.text(context),
                           decoration: item.completed ? TextDecoration.lineThrough : null,
                         ),
                       ),
@@ -877,7 +959,7 @@ class _CalItemCard extends StatelessWidget {
                         item.subtitle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                        style: TextStyle(fontSize: 12, color: AppColors.subtext(context)),
                       ),
                     ],
                   ),
@@ -923,19 +1005,21 @@ class _AddMenuSheet extends StatelessWidget {
   final VoidCallback onAddTask;
   final VoidCallback onAddEvent;
   final VoidCallback onAddClass;
+  final bool isVisitor;
 
   const _AddMenuSheet({
     required this.onAddTask,
     required this.onAddEvent,
     required this.onAddClass,
+    this.isVisitor = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: AppColors.card(context),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
       child: Column(
@@ -946,22 +1030,22 @@ class _AddMenuSheet extends StatelessWidget {
             child: Container(
               width: 40, height: 4,
               decoration: BoxDecoration(
-                color: AppColors.border,
+                color: AppColors.borderCol(context),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
           ),
           const SizedBox(height: 20),
-          const Text(
+          Text(
             'What do you want to add?',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.text(context)),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 20),
           _AddMenuTile(
             icon: Icons.task_alt_rounded,
             label: 'Task',
-            description: 'To-do, assignment, deadline',
+            description: isVisitor ? 'Campus visit task, reminder' : 'To-do, assignment, deadline',
             color: CalColors.task,
             bgColor: CalColors.taskBg,
             onTap: onAddTask,
@@ -970,20 +1054,22 @@ class _AddMenuSheet extends StatelessWidget {
           _AddMenuTile(
             icon: Icons.event_rounded,
             label: 'Event',
-            description: 'Campus event, club meeting',
+            description: isVisitor ? 'Campus open event, tour' : 'Campus event, club meeting',
             color: CalColors.event,
             bgColor: CalColors.eventBg,
             onTap: onAddEvent,
           ),
-          const SizedBox(height: 10),
-          _AddMenuTile(
-            icon: Icons.school_rounded,
-            label: 'Class',
-            description: 'Weekly recurring lecture',
-            color: CalColors.classClr,
-            bgColor: CalColors.classBg,
-            onTap: onAddClass,
-          ),
+          if (!isVisitor) ...[
+            const SizedBox(height: 10),
+            _AddMenuTile(
+              icon: Icons.school_rounded,
+              label: 'Class',
+              description: 'Weekly recurring lecture',
+              color: CalColors.classClr,
+              bgColor: CalColors.classBg,
+              onTap: onAddClass,
+            ),
+          ],
         ],
       ),
     );
@@ -1061,9 +1147,9 @@ class _ItemDetailSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: AppColors.card(context),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.only(
         left: 20, right: 20, top: 12,
@@ -1100,7 +1186,7 @@ class _ItemDetailSheet extends StatelessWidget {
                       style: TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 18,
-                        color: AppColors.textPrimary,
+                        color: AppColors.text(context),
                         decoration: item.completed ? TextDecoration.lineThrough : null,
                       ),
                     ),
@@ -1125,16 +1211,16 @@ class _ItemDetailSheet extends StatelessWidget {
           const Divider(),
           const SizedBox(height: 12),
           // Time
-          _detailRow(Icons.schedule_rounded, item.subtitle),
+          _detailRow(context, Icons.schedule_rounded, item.subtitle),
           // Location
           if (item.location != null && item.location!.isNotEmpty)
-            _detailRow(Icons.location_on_outlined, item.location!),
+            _detailRow(context, Icons.location_on_outlined, item.location!),
           // Description
           if (item.description != null && item.description!.isNotEmpty)
-            _detailRow(Icons.notes_rounded, item.description!),
+            _detailRow(context, Icons.notes_rounded, item.description!),
           // Priority
           if (item.priority != null)
-            _detailRow(Icons.flag_rounded, 'Priority: ${item.priority}'),
+            _detailRow(context, Icons.flag_rounded, 'Priority: ${item.priority}'),
 
           const SizedBox(height: 20),
           // Actions
@@ -1167,18 +1253,18 @@ class _ItemDetailSheet extends StatelessWidget {
     );
   }
 
-  Widget _detailRow(IconData icon, String text) {
+  Widget _detailRow(BuildContext context, IconData icon, String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 18, color: AppColors.textSecondary),
+          Icon(icon, size: 18, color: AppColors.subtext(context)),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(fontSize: 14, color: AppColors.textPrimary, height: 1.4),
+              style: TextStyle(fontSize: 14, color: AppColors.text(context), height: 1.4),
             ),
           ),
         ],
@@ -1259,7 +1345,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
         children: [
           _SheetField(label: 'Task Title', child: TextField(
             controller: _titleCtrl,
-            decoration: _inputDec('e.g. Complete DBMS Assignment'),
+            decoration: _inputDec(context, 'e.g. Complete DBMS Assignment'),
             textCapitalization: TextCapitalization.sentences,
           )),
           const SizedBox(height: 14),
@@ -1279,7 +1365,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
           const SizedBox(height: 14),
           _SheetField(label: 'Priority', child: DropdownButtonFormField<String>(
             initialValue: _priority,
-            decoration: _inputDec(null),
+            decoration: _inputDec(context, null),
             items: ['Low', 'Medium', 'High']
                 .map((p) => DropdownMenuItem(value: p, child: Text(p)))
                 .toList(),
@@ -1289,7 +1375,7 @@ class _AddTaskSheetState extends State<AddTaskSheet> {
           Row(children: [
             const Icon(Icons.notifications_outlined, color: AppColors.textSecondary, size: 18),
             const SizedBox(width: 10),
-            const Expanded(child: Text('Remind me 30 min before', style: TextStyle(fontSize: 14, color: AppColors.textPrimary))),
+            Expanded(child: Text('Remind me 30 min before', style: TextStyle(fontSize: 14, color: AppColors.text(context)))),
             Switch(value: _reminder, onChanged: (v) => setState(() => _reminder = v), activeThumbColor: CalColors.task),
           ]),
           const SizedBox(height: 20),
@@ -1393,7 +1479,7 @@ class _AddEventSheetState extends State<AddEventSheet> {
         children: [
           _SheetField(label: 'Event Name', child: TextField(
             controller: _titleCtrl,
-            decoration: _inputDec('e.g. Hackathon 3.0'),
+            decoration: _inputDec(context, 'e.g. Hackathon 3.0'),
             textCapitalization: TextCapitalization.words,
           )),
           const SizedBox(height: 14),
@@ -1419,19 +1505,19 @@ class _AddEventSheetState extends State<AddEventSheet> {
           const SizedBox(height: 14),
           _SheetField(label: 'Location', child: TextField(
             controller: _locationCtrl,
-            decoration: _inputDec('e.g. Main Auditorium'),
+            decoration: _inputDec(context, 'e.g. Main Auditorium'),
           )),
           const SizedBox(height: 14),
           _SheetField(label: 'Description (optional)', child: TextField(
             controller: _descCtrl,
-            decoration: _inputDec('Brief description...'),
+            decoration: _inputDec(context, 'Brief description...'),
             maxLines: 2,
           )),
           const SizedBox(height: 14),
           Row(children: [
             const Icon(Icons.notifications_outlined, color: AppColors.textSecondary, size: 18),
             const SizedBox(width: 10),
-            const Expanded(child: Text('Notify me 30 min before', style: TextStyle(fontSize: 14, color: AppColors.textPrimary))),
+            Expanded(child: Text('Notify me 30 min before', style: TextStyle(fontSize: 14, color: AppColors.text(context)))),
             Switch(value: _notify, onChanged: (v) => setState(() => _notify = v), activeThumbColor: CalColors.event),
           ]),
           const SizedBox(height: 20),
@@ -1521,7 +1607,7 @@ class _AddClassSheetState extends State<AddClassSheet> {
         children: [
           _SheetField(label: 'Subject', child: TextField(
             controller: _subjectCtrl,
-            decoration: _inputDec('e.g. Machine Learning'),
+            decoration: _inputDec(context, 'e.g. Machine Learning'),
             textCapitalization: TextCapitalization.words,
           )),
           const SizedBox(height: 14),
@@ -1540,10 +1626,14 @@ class _AddClassSheetState extends State<AddClassSheet> {
                     width: 40, height: 40,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: selected ? CalColors.classClr : AppColors.background,
+                      color: selected
+                          ? CalColors.classClr
+                          : (AppColors.isDark(context) ? const Color(0xFF262626) : const Color(0xFFF1F5F9)),
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
-                        color: selected ? CalColors.classClr : AppColors.border,
+                        color: selected
+                            ? CalColors.classClr
+                            : (AppColors.isDark(context) ? const Color(0xFF404040) : AppColors.border),
                       ),
                     ),
                     child: Text(
@@ -1551,7 +1641,7 @@ class _AddClassSheetState extends State<AddClassSheet> {
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: selected ? Colors.white : AppColors.textPrimary,
+                        color: selected ? Colors.white : AppColors.text(context),
                       ),
                     ),
                   ),
@@ -1576,18 +1666,18 @@ class _AddClassSheetState extends State<AddClassSheet> {
           const SizedBox(height: 14),
           _SheetField(label: 'Room / Location', child: TextField(
             controller: _roomCtrl,
-            decoration: _inputDec('e.g. AB2 - 304'),
+            decoration: _inputDec(context, 'e.g. AB2 - 304'),
           )),
           const SizedBox(height: 14),
           _SheetField(label: 'Teacher (optional)', child: TextField(
             controller: _teacherCtrl,
-            decoration: _inputDec('e.g. Dr. Sharma'),
+            decoration: _inputDec(context, 'e.g. Dr. Sharma'),
           )),
           const SizedBox(height: 14),
           Row(children: [
             const Icon(Icons.repeat_rounded, color: AppColors.textSecondary, size: 18),
             const SizedBox(width: 10),
-            const Expanded(child: Text('Repeat every week', style: TextStyle(fontSize: 14, color: AppColors.textPrimary))),
+            Expanded(child: Text('Repeat every week', style: TextStyle(fontSize: 14, color: AppColors.text(context)))),
             Switch(value: _isWeekly, onChanged: (v) => setState(() => _isWeekly = v), activeThumbColor: CalColors.classClr),
           ]),
           const SizedBox(height: 20),
@@ -1621,9 +1711,9 @@ class _SheetScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: AppColors.card(context),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.only(
         left: 20, right: 20, top: 12,
@@ -1691,9 +1781,11 @@ class _TapField extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
         decoration: BoxDecoration(
-          color: AppColors.background,
+          color: AppColors.isDark(context) ? const Color(0xFF262626) : const Color(0xFFF8FAFC),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(
+            color: AppColors.isDark(context) ? const Color(0xFF404040) : AppColors.border,
+          ),
         ),
         child: Row(
           children: [
@@ -1702,7 +1794,11 @@ class _TapField extends StatelessWidget {
             Expanded(
               child: Text(
                 text,
-                style: const TextStyle(fontSize: 14, color: AppColors.textPrimary, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.text(context),
+                  fontWeight: FontWeight.w600,
+                ),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -1713,19 +1809,23 @@ class _TapField extends StatelessWidget {
   }
 }
 
-InputDecoration _inputDec(String? hint) => InputDecoration(
+InputDecoration _inputDec(BuildContext context, String? hint) => InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+      hintStyle: TextStyle(color: AppColors.subtext(context), fontSize: 13),
       filled: true,
-      fillColor: AppColors.background,
+      fillColor: AppColors.isDark(context) ? const Color(0xFF262626) : const Color(0xFFF8FAFC),
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: AppColors.border),
+        borderSide: BorderSide(
+          color: AppColors.isDark(context) ? const Color(0xFF404040) : AppColors.border,
+        ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: AppColors.border),
+        borderSide: BorderSide(
+          color: AppColors.isDark(context) ? const Color(0xFF404040) : AppColors.border,
+        ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),

@@ -21,9 +21,14 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "firebase-admin": "^13.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.5",
     "morgan": "^1.10.0",
-    "firebase-admin": "^13.1.0"
+    "multer": "^2.5.0",
+    "nodemailer": "^10.2.1"
+  },
+  "devDependencies": {
+    "supertest": "^7.3.1"
   }
 }

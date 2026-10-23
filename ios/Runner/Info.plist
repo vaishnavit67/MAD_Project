@@ -4,6 +4,10 @@
 <dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Campus Connect needs your location for live campus turn-by-turn navigation.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Campus Connect requires camera access to take photos of lost and found items or campus events.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Campus Connect requires access to your photo library to attach images to items and events.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>

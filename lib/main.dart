@@ -7,6 +7,7 @@ import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
 import 'core/constants/app_constants.dart';
 import 'services/mongodb_service.dart';
+import 'services/auth_service.dart';
 import 'services/history_service.dart';
 import 'services/settings_service.dart';
 import 'features/notifications/services/notification_service.dart';
@@ -111,7 +112,14 @@ void main() async {
     debugPrint('MongoDB initialization notice: $e');
   }
 
-  // 5. Determine initial theme safely
+  // 5. Restore user authentication session from persistent storage
+  try {
+    await AuthService.restoreSession();
+  } catch (e) {
+    debugPrint('Auth session restoration notice: $e');
+  }
+
+  // 6. Determine initial theme safely
   ThemeMode initialMode = ThemeMode.light;
   try {
     initialMode = SettingsService().isDarkMode ? ThemeMode.dark : ThemeMode.light;

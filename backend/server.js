@@ -9,10 +9,18 @@ const bcrypt = require('bcryptjs');
 const authRoutes = require('./routes/authRoutes');
 const locationRoutes = require('./routes/locationRoutes');
 const lostFoundRoutes = require('./routes/lostFoundRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
+const clubRoutes = require('./routes/clubRoutes');
+const eventRoutes = require('./routes/eventRoutes');
+const facultyRoutes = require('./routes/facultyRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+const calendarRoutes = require('./routes/calendarRoutes');
 const Faculty = require('./models/Faculty');
 const Student = require('./models/Student');
 const Visitor = require('./models/Visitor');
 const CampusLocation = require('./models/CampusLocation');
+const Club = require('./models/Club');
+const Event = require('./models/Event');
 const defaultLocations = require('./data/campusLocations.json');
 
 const app = express();
@@ -24,6 +32,9 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(morgan('dev'));
+
+// Static uploads serving
+app.use('/uploads', express.static(path.resolve(__dirname, 'uploads')));
 
 // Health check endpoint
 app.get('/api/health', async (req, res) => {
@@ -41,7 +52,7 @@ app.get('/api/health', async (req, res) => {
     status: 'online',
     app: 'Campus Connect MAD Backend',
     database: stateLabels[dbState] || 'unknown',
-    tables: ['faculty', 'students', 'visitors', 'locations', 'lost_found', 'lost_found_claims'],
+    tables: ['faculty', 'students', 'visitors', 'locations', 'lost_found', 'lost_found_claims', 'clubs', 'events', 'notifications', 'calendar_items'],
     campusLocationsCount: locationCount,
     timestamp: new Date().toISOString(),
   });
@@ -55,6 +66,24 @@ app.use('/api/locations', locationRoutes);
 
 // Lost & Found routes
 app.use('/api/lost-found', lostFoundRoutes);
+
+// Image Upload routes
+app.use('/api/upload', uploadRoutes);
+
+// Club routes
+app.use('/api/clubs', clubRoutes);
+
+// Event routes
+app.use('/api/events', eventRoutes);
+
+// Faculty routes
+app.use('/api/faculty', facultyRoutes);
+
+// Notification routes (role-tailored and user-specific)
+app.use('/api/notifications', notificationRoutes);
+
+// Calendar routes (classes, tasks, schedule per user & role)
+app.use('/api/calendar', calendarRoutes);
 
 // 404 Handler
 app.use((req, res) => {
@@ -158,6 +187,137 @@ async function seedDefaultCampusLocations() {
   }
 }
 
+// Seed default campus clubs if collection is empty
+async function seedDefaultClubs() {
+  try {
+    const count = await Club.countDocuments();
+    if (count === 0) {
+      const defaultClubs = [
+        {
+          name: 'DevTech Coding Club',
+          category: 'Technical',
+          description: 'Building real-world web, mobile apps & AI solutions. Join hackathons and tech talks!',
+          membersCount: 142,
+          members: ['Faculty Member'],
+          createdBy: 'system-seed',
+          createdByName: 'Faculty Coordinator',
+        },
+        {
+          name: 'Creative UI/UX Design',
+          category: 'Creative',
+          description: 'Master Figma, graphic design, animation, and digital brand storytelling.',
+          membersCount: 98,
+          members: ['Faculty Member'],
+          createdBy: 'system-seed',
+          createdByName: 'Faculty Coordinator',
+        },
+        {
+          name: 'Acoustics Music Society',
+          category: 'Cultural',
+          description: 'Jamming sessions, vocal coaching, band performances & annual music fests.',
+          membersCount: 115,
+          members: ['Faculty Member'],
+          createdBy: 'system-seed',
+          createdByName: 'Faculty Coordinator',
+        },
+        {
+          name: 'Campus Varsity Sports',
+          category: 'Sports',
+          description: 'Cricket, Football, Basketball and Badminton tournaments and regular practice sessions.',
+          membersCount: 180,
+          members: ['Faculty Member'],
+          createdBy: 'system-seed',
+          createdByName: 'Faculty Coordinator',
+        },
+      ];
+      await Club.insertMany(defaultClubs);
+      console.log(`[Seed Clubs]: Successfully seeded ${defaultClubs.length} default clubs in MongoDB.`);
+    }
+  } catch (err) {
+    console.error('[Seed Clubs Error]:', err.message);
+  }
+}
+
+// Seed default campus events if collection is empty
+async function seedDefaultEvents() {
+  try {
+    const count = await Event.countDocuments();
+    if (count === 0) {
+      const now = new Date();
+      const defaultEvents = [
+        {
+          title: 'Tech Talk 2026',
+          date: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000),
+          timeString: '10:00 AM',
+          endTimeString: '12:00 PM',
+          location: 'AB2 Seminar Hall',
+          description: 'Insightful tech talk on AI and the future of software development. Industry leaders share experiences on cutting-edge technologies.',
+          organizer: 'Coding Club',
+          availableSeats: 50,
+          capacity: 150,
+          participantCount: 78,
+          category: 'Technology',
+          featured: false,
+          createdBy: 'system-seed',
+          createdByName: 'Faculty Coordinator',
+        },
+        {
+          title: 'Hackathon 3.0',
+          date: new Date(now.getTime() + 6 * 24 * 60 * 60 * 1000),
+          timeString: '09:00 AM',
+          endTimeString: '09:00 AM',
+          location: 'Innovation Lab, Main Block',
+          description: '24-hour hackathon to build innovative solutions for real-world campus problems. Teams of 2-4. Prizes worth 1,00,000+.',
+          organizer: 'Tech Society',
+          availableSeats: 20,
+          capacity: 200,
+          participantCount: 124,
+          category: 'Hackathon',
+          featured: true,
+          createdBy: 'system-seed',
+          createdByName: 'Faculty Coordinator',
+        },
+        {
+          title: 'Cultural Fest - Utsav 2026',
+          date: new Date(now.getTime() + 10 * 24 * 60 * 60 * 1000),
+          timeString: '09:00 AM',
+          endTimeString: '09:00 PM',
+          location: 'Main Auditorium',
+          description: 'Annual cultural festival featuring music, dance, art exhibitions, and dramatic performances. A celebration of campus talent.',
+          organizer: 'Cultural Committee',
+          availableSeats: 500,
+          capacity: 1000,
+          participantCount: 342,
+          category: 'Cultural',
+          featured: false,
+          createdBy: 'system-seed',
+          createdByName: 'Faculty Coordinator',
+        },
+        {
+          title: 'AI and ML Workshop',
+          date: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000),
+          timeString: '02:00 PM',
+          endTimeString: '05:00 PM',
+          location: 'Computer Lab 3, AB2',
+          description: 'Hands-on workshop on practical machine learning using Python and TensorFlow. Train your own model. Bring your laptop.',
+          organizer: 'AI Research Club',
+          availableSeats: 15,
+          capacity: 60,
+          participantCount: 45,
+          category: 'Workshop',
+          featured: false,
+          createdBy: 'system-seed',
+          createdByName: 'Faculty Coordinator',
+        },
+      ];
+      await Event.insertMany(defaultEvents);
+      console.log(`[Seed Events]: Successfully seeded ${defaultEvents.length} default events in MongoDB.`);
+    }
+  } catch (err) {
+    console.error('[Seed Events Error]:', err.message);
+  }
+}
+
 // Connect to MongoDB & Start Server
 async function startServer() {
   try {
@@ -168,9 +328,11 @@ async function startServer() {
     });
     console.log(`MongoDB connected successfully to database: "${DB_NAME}"!`);
 
-    // Seed initial demo users & campus locations
+    // Seed initial demo users, campus locations, clubs & events
     await seedDefaultDemoAccounts();
     await seedDefaultCampusLocations();
+    await seedDefaultClubs();
+    await seedDefaultEvents();
   } catch (error) {
     console.warn(`[MongoDB Warning]: Could not connect to MongoDB server: ${error.message}`);
     console.warn('Backend server will start, but database operations will fail until MongoDB is available.');
@@ -184,7 +346,11 @@ async function startServer() {
     console.log(`Auth Endpoints: http://localhost:${PORT}/api/auth/signup & /login`);
     console.log(`Location Endpoints: http://localhost:${PORT}/api/locations`);
     console.log(`Lost & Found Endpoints: http://localhost:${PORT}/api/lost-found`);
-    console.log(`Collections (Tables): faculty, students, visitors, locations, lost_found, lost_found_claims`);
+    console.log(`Upload Endpoint: http://localhost:${PORT}/api/upload`);
+    console.log(`Club Endpoints: http://localhost:${PORT}/api/clubs`);
+    console.log(`Event Endpoints: http://localhost:${PORT}/api/events`);
+    console.log(`Faculty Endpoints: http://localhost:${PORT}/api/faculty`);
+    console.log(`Collections (Tables): faculty, students, visitors, locations, lost_found, lost_found_claims, clubs, events`);
     console.log('====================================================');
   });
 

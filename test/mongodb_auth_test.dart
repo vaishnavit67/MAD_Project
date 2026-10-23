@@ -1,4 +1,7 @@
+import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hive/hive.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:campus_navigator/services/mongodb_service.dart';
 import 'package:campus_navigator/services/auth_service.dart';
 
@@ -6,8 +9,16 @@ void main() {
   final mongoService = MongoDbService.instance;
   final authService = AuthService();
 
+  setUpAll(() {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({});
+    final tempDir = Directory.systemTemp.createTempSync('hive_auth_test');
+    Hive.init(tempDir.path);
+  });
+
   setUp(() async {
-    // Reset to clean state with seed users before each test
+    // Isolate unit tests to local in-memory MongoDB store
+    mongoService.configureBackend(url: 'http://offline.test.local:5000');
     await mongoService.resetToSeedData();
   });
 

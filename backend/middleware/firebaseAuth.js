@@ -87,11 +87,23 @@ async function requireAuth(req, res, next) {
     token.startsWith('user_')
   ) {
     const extractedUid = token.replace(/^(mock-uid-|dev-token-|test-user-|token_)/, '');
+    let role = 'Student';
+    let domain = 'cb.students.amrita.edu';
+    if (token.toLowerCase().includes('faculty') || extractedUid.toLowerCase().includes('faculty')) {
+      role = 'Faculty';
+      domain = 'cb.amrita.edu';
+    } else if (token.toLowerCase().includes('visitor') || extractedUid.toLowerCase().includes('visitor')) {
+      role = 'Visitor';
+      domain = 'gmail.com';
+    } else if (token.toLowerCase().includes('admin') || extractedUid.toLowerCase().includes('admin')) {
+      role = 'admin';
+    }
+
     req.user = {
       uid: extractedUid || token,
-      email: `${extractedUid || token}@cb.students.amrita.edu`,
-      name: `User ${extractedUid || token}`,
-      role: token.includes('admin') ? 'admin' : 'user',
+      email: `${extractedUid || token}@${domain}`,
+      name: role === 'Faculty' ? 'Faculty Coordinator' : `User ${extractedUid || token}`,
+      role: role,
       isDevMock: true,
     };
     return next();
@@ -155,11 +167,23 @@ async function optionalAuth(req, res, next) {
     token.startsWith('user_')
   ) {
     const extractedUid = token.replace(/^(mock-uid-|dev-token-|test-user-|token_)/, '');
+    let role = 'Student';
+    let domain = 'cb.students.amrita.edu';
+    if (token.toLowerCase().includes('faculty') || extractedUid.toLowerCase().includes('faculty')) {
+      role = 'Faculty';
+      domain = 'cb.amrita.edu';
+    } else if (token.toLowerCase().includes('visitor') || extractedUid.toLowerCase().includes('visitor')) {
+      role = 'Visitor';
+      domain = 'gmail.com';
+    } else if (token.toLowerCase().includes('admin') || extractedUid.toLowerCase().includes('admin')) {
+      role = 'admin';
+    }
+
     req.user = {
       uid: extractedUid || token,
-      email: `${extractedUid || token}@cb.students.amrita.edu`,
-      name: `User ${extractedUid || token}`,
-      role: token.includes('admin') ? 'admin' : 'user',
+      email: `${extractedUid || token}@${domain}`,
+      name: role === 'Faculty' ? 'Faculty Coordinator' : `User ${extractedUid || token}`,
+      role: role,
     };
     return next();
   }
@@ -168,7 +192,28 @@ async function optionalAuth(req, res, next) {
   return next();
 }
 
+/**
+ * Require Faculty role (or admin). Rejects with 403 Forbidden if user is student or visitor.
+ */
+function requireFaculty(req, res, next) {
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      message: 'Authentication required. Please provide a valid Bearer token.',
+    });
+  }
+  const role = (req.user.role || '').toLowerCase();
+  if (role !== 'faculty' && role !== 'admin') {
+    return res.status(403).json({
+      success: false,
+      message: 'Access denied. Faculty privileges required for this action.',
+    });
+  }
+  next();
+}
+
 module.exports = {
   requireAuth,
   optionalAuth,
+  requireFaculty,
 };

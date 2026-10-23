@@ -28,6 +28,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _obscurePassword = true;
   bool _isLoading = false;
+  bool _rememberMe = true;
+  bool _hasLoadedSavedLogin = false;
   String _selectedRole = 'Student';
 
   final List<String> _roles = ['Student', 'Faculty', 'Visitor'];
@@ -36,10 +38,55 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     super.initState();
     _identityController = TextEditingController(text: widget.initialIdentity ?? '');
+    _identityController.addListener(_onIdentityChanged);
+    _loadSavedPreferences();
+  }
+
+  Future<void> _loadSavedPreferences() async {
+    try {
+      final saved = await AuthService.getSavedLoginPreferences();
+      if (!mounted) return;
+      final savedIdentity = saved['identity'] as String? ?? '';
+      final savedRole = saved['role'] as String? ?? 'Student';
+      final rememberMe = saved['rememberMe'] as bool? ?? true;
+
+      setState(() {
+        _rememberMe = rememberMe;
+        if (widget.initialIdentity == null || widget.initialIdentity!.isEmpty) {
+          if (savedIdentity.isNotEmpty) {
+            _identityController.text = savedIdentity;
+            _hasLoadedSavedLogin = true;
+          }
+        }
+        if (_roles.contains(savedRole)) {
+          _selectedRole = savedRole;
+        }
+      });
+    } catch (_) {}
+  }
+
+  void _onIdentityChanged() {
+    final text = _identityController.text.trim().toLowerCase();
+    if (text.isEmpty) return;
+
+    if (text.contains('@cb.amrita.edu') || (text.contains('@amrita.edu') && !text.contains('student'))) {
+      if (_selectedRole != 'Faculty') {
+        setState(() => _selectedRole = 'Faculty');
+      }
+    } else if (text.contains('student') || text.startsWith('cb.sc.') || text.startsWith('cb.en.')) {
+      if (_selectedRole != 'Student') {
+        setState(() => _selectedRole = 'Student');
+      }
+    } else if (text.contains('@gmail.com') || text.startsWith('vis')) {
+      if (_selectedRole != 'Visitor') {
+        setState(() => _selectedRole = 'Visitor');
+      }
+    }
   }
 
   @override
   void dispose() {
+    _identityController.removeListener(_onIdentityChanged);
     _identityController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -48,24 +95,24 @@ class _LoginScreenState extends State<LoginScreen> {
   String _getIdentityHint() {
     switch (_selectedRole) {
       case 'Visitor':
-        return 'user@gmail.com or 10-digit phone';
+        return 'user@gmail.com, 10-digit phone, or Visitor ID';
       case 'Faculty':
-        return 'faculty@cb.amrita.edu or 10-digit phone';
+        return 'faculty@cb.amrita.edu, phone, or Emp ID';
       case 'Student':
       default:
-        return 'student@cb.students.amrita.edu or 10-digit phone';
+        return 'Email, Roll No (e.g. CB.SC.U4...), or phone';
     }
   }
 
   String _getIdentityHelperText() {
     switch (_selectedRole) {
       case 'Visitor':
-        return 'Requires @gmail.com or phone';
+        return 'Requires @gmail.com, phone, or Visitor ID';
       case 'Faculty':
-        return 'Requires @cb.amrita.edu or phone';
+        return 'Requires @cb.amrita.edu, phone, or Emp ID';
       case 'Student':
       default:
-        return 'Requires @cb.students.amrita.edu or phone';
+        return 'Use student email, Roll Number, or phone';
     }
   }
 
@@ -89,6 +136,16 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
 
       if (result.success) {
+        // Save persistent login preferences so user never loses credentials
+        await AuthService.saveLoginPreferences(
+          identity: identity,
+          role: _selectedRole,
+          rememberMe: _rememberMe,
+        );
+        await AuthService.setOnboardingCompleted();
+
+        if (!mounted) return;
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
@@ -107,6 +164,15 @@ class _LoginScreenState extends State<LoginScreen> {
           MaterialPageRoute(builder: (_) => const MainShell()),
         );
       } else {
+        // Automatically switch role tab if backend indicates account belongs to another role
+        if (result.message.contains('registered as Faculty')) {
+          setState(() => _selectedRole = 'Faculty');
+        } else if (result.message.contains('registered as Student')) {
+          setState(() => _selectedRole = 'Student');
+        } else if (result.message.contains('registered as Visitor')) {
+          setState(() => _selectedRole = 'Visitor');
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
@@ -169,6 +235,46 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: TextStyle(color: AppColors.textSecondary, fontSize: 15),
                 ),
                 const SizedBox(height: 24),
+
+                // SAVED ACCOUNT BANNER (IF LOADED)
+                if (_hasLoadedSavedLogin && _identityController.text.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.bookmark_added_rounded, size: 18, color: AppColors.primary),
+                          const SizedBox(width: 8),
+                          const Expanded(
+                            child: Text(
+                              'Saved account pre-filled',
+                              style: TextStyle(fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _identityController.clear();
+                                _passwordController.clear();
+                                _hasLoadedSavedLogin = false;
+                              });
+                              AuthService.saveLoginPreferences(identity: '', role: 'Student', rememberMe: false);
+                            },
+                            child: const Text(
+                              'Clear',
+                              style: TextStyle(fontSize: 12, color: AppColors.textSecondary, decoration: TextDecoration.underline),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
 
                 // ROLE SELECTOR TABS
                 Container(
@@ -254,19 +360,51 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 12),
 
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Contact campus IT desk for password reset assistance.'),
-                          behavior: SnackBarBehavior.floating,
+                // REMEMBER ME & FORGOT PASSWORD ROW
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: Checkbox(
+                            value: _rememberMe,
+                            activeColor: AppColors.primary,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                            onChanged: (val) {
+                              setState(() => _rememberMe = val ?? true);
+                            },
+                          ),
                         ),
-                      );
-                    },
-                    child: const Text('Forgot Password?', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
-                  ),
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: () => setState(() => _rememberMe = !_rememberMe),
+                          child: const Text(
+                            'Remember Me',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Contact campus IT desk for password reset assistance.'),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+                      child: const Text('Forgot Password?', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16),
 

@@ -5,6 +5,7 @@ import '../models/task_model.dart';
 import '../services/task_service.dart';
 import '../../../features/notifications/services/in_app_notification_service.dart';
 import '../../../features/notifications/models/notification_model.dart';
+import '../../../services/auth_service.dart';
 import 'dart:math';
 
 class TasksScreen extends StatefulWidget {
@@ -18,14 +19,32 @@ class _TasksScreenState extends State<TasksScreen> {
   final TaskService _taskService = TaskService();
   final InAppNotificationService _notifService = InAppNotificationService();
 
+  @override
+  void initState() {
+    super.initState();
+    _refreshBackend();
+  }
+
+  Future<void> _refreshBackend() async {
+    await _taskService.fetchTasksFromBackend();
+    if (mounted) setState(() {});
+  }
+
   void _addMockTask() async {
+    final title = AuthService.isVisitor
+        ? 'Campus Tour Itinerary ${Random().nextInt(100)}'
+        : (AuthService.isFaculty
+            ? 'Paper Review & Grading ${Random().nextInt(100)}'
+            : 'DBMS Assignment ${Random().nextInt(100)}');
+    final cat = AuthService.isVisitor ? 'Visitor' : (AuthService.isFaculty ? 'Faculty' : 'Assignment');
+
     final newTask = TaskModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      title: 'DBMS Assignment ${Random().nextInt(100)}',
-      description: 'Complete SQL queries',
+      title: title,
+      description: 'Campus task item',
       dueDateTime: DateTime.now().add(const Duration(hours: 5)),
       priority: 'High',
-      category: 'Assignment',
+      category: cat,
       reminderMinutes: 10,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
@@ -40,12 +59,21 @@ class _TasksScreenState extends State<TasksScreen> {
     final tasks = _taskService.getTasks();
     return Scaffold(
       appBar: AppBar(title: const Text('Tasks')),
-      body: tasks.isEmpty 
-          ? const Center(child: Text("✨ No tasks\nYou're all caught up!"))
-          : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: tasks.length,
-              itemBuilder: (context, index) {
+      body: RefreshIndicator(
+        onRefresh: _refreshBackend,
+        child: tasks.isEmpty 
+            ? SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.7,
+                  child: const Center(child: Text("✨ No tasks\nYou're all caught up!")),
+                ),
+              )
+            : ListView.builder(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(16),
+                itemCount: tasks.length,
+                itemBuilder: (context, index) {
                 final t = tasks[index];
                 return Card(
                   margin: const EdgeInsets.only(bottom: 12),
@@ -89,6 +117,7 @@ class _TasksScreenState extends State<TasksScreen> {
                 );
               },
             ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addMockTask,
         backgroundColor: AppColors.primary,

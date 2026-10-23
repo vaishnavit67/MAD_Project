@@ -34,4 +34,12 @@ class LFColors {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
+
+  // Dynamic Theme Helpers
+  static bool isDark(BuildContext context) => Theme.of(context).brightness == Brightness.dark;
+  static Color bg(BuildContext context) => isDark(context) ? const Color(0xFF121212) : background;
+  static Color card(BuildContext context) => isDark(context) ? const Color(0xFF1E1E1E) : cardBg;
+  static Color text(BuildContext context) => isDark(context) ? const Color(0xFFF1F5F9) : textPrimary;
+  static Color subtext(BuildContext context) => isDark(context) ? const Color(0xFF94A3B8) : textSecondary;
+  static Color muted(BuildContext context) => isDark(context) ? const Color(0xFF64748B) : textMuted;
 }

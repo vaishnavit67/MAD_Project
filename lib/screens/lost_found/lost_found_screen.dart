@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io' as io;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -6,23 +7,47 @@ import '../../core/theme/lf_colors.dart';
 import '../../core/constants/app_colors.dart';
 import '../../services/lost_found_service.dart';
 import '../../services/auth_service.dart';
+import '../../services/image_upload_service.dart';
+import '../../services/mongodb_service.dart';
+import '../../features/notifications/services/notification_service.dart';
 
 Widget _buildItemImage(String path, {BoxFit fit = BoxFit.cover}) {
-  if (kIsWeb || path.startsWith('http://') || path.startsWith('https://') || path.startsWith('blob:')) {
+  String normalized = path.trim();
+
+  // 1. Resolve relative static upload paths from backend
+  if (normalized.startsWith('/uploads/')) {
+    normalized = '${MongoDbService.instance.backendUrl}$normalized';
+  } else if (normalized.contains('localhost:5000')) {
+    normalized = normalized.replaceAll('http://localhost:5000', MongoDbService.instance.backendUrl);
+  } else if (normalized.contains('127.0.0.1:5000')) {
+    normalized = normalized.replaceAll('http://127.0.0.1:5000', MongoDbService.instance.backendUrl);
+  }
+
+  // 2. Base64 data URI
+  if (normalized.startsWith('data:image/')) {
+    try {
+      final bytes = base64Decode(normalized.split(',').last);
+      return Image.memory(bytes, fit: fit);
+    } catch (_) {}
+  }
+
+  // 3. Network Image
+  if (kIsWeb || normalized.startsWith('http://') || normalized.startsWith('https://') || normalized.startsWith('blob:')) {
     return Image.network(
-      path,
-      fit: fit,
-      errorBuilder: (context, error, stackTrace) =>
-          const Icon(Icons.broken_image_rounded, size: 30, color: LFColors.textMuted),
-    );
-  } else {
-    return Image.file(
-      io.File(path),
+      normalized,
       fit: fit,
       errorBuilder: (context, error, stackTrace) =>
           const Icon(Icons.broken_image_rounded, size: 30, color: LFColors.textMuted),
     );
   }
+
+  // 4. Local File Image (from device camera / gallery)
+  return Image.file(
+    io.File(normalized),
+    fit: fit,
+    errorBuilder: (context, error, stackTrace) =>
+        const Icon(Icons.broken_image_rounded, size: 30, color: LFColors.textMuted),
+  );
 }
 
 /* =========================================================
@@ -173,15 +198,18 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
     if (!mounted || result == null) return;
 
     // Send to MongoDB Atlas backend
+    final String? resolvedImageUrl = result['imageUrl'] ??
+        ((result['image'] != null && result['image'].toString().startsWith('http'))
+            ? result['image'].toString()
+            : null);
+
     final created = await LostFoundService.instance.createItem(
       title: result['title'] ?? 'Untitled Item',
       description: result['description'] ?? 'No description provided.',
       category: result['category'] ?? 'Other',
       type: (result['status'] == 'Found') ? 'found' : 'lost',
       location: result['location'] ?? 'Campus',
-      imageUrl: (result['image'] != null && result['image'].toString().startsWith('http'))
-          ? result['image'].toString()
-          : null,
+      imageUrl: resolvedImageUrl,
       ownerName: AuthService.currentUser?.name ?? 'Amrita Student',
     );
 
@@ -227,11 +255,11 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
     final results = _filteredItems;
 
     return Scaffold(
-      backgroundColor: LFColors.background,
+      backgroundColor: LFColors.bg(context),
       appBar: AppBar(
-        title: const Text('Lost & Found', style: TextStyle(color: LFColors.textPrimary)),
-        backgroundColor: LFColors.cardBg,
-        iconTheme: const IconThemeData(color: LFColors.textPrimary),
+        title: Text('Lost & Found', style: TextStyle(color: LFColors.text(context), fontWeight: FontWeight.w800)),
+        backgroundColor: LFColors.card(context),
+        iconTheme: IconThemeData(color: LFColors.text(context)),
       ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
@@ -243,24 +271,23 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: LFColors.card(context),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: LFColors.primary.withValues(alpha: 0.12)),
+                border: Border.all(color: LFColors.isDark(context) ? Colors.white12 : LFColors.primary.withValues(alpha: 0.12)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.02),
+                    color: Colors.black.withValues(alpha: LFColors.isDark(context) ? 0.2 : 0.02),
                     blurRadius: 10,
                   ),
                 ],
               ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _miniStat('88%', 'Recovery Rate', Icons.verified_rounded, const Color(0xFF10B981)),
-                  Container(height: 24, width: 1, color: const Color(0xFFE2E8F0)),
-                  _miniStat('240+', 'Items Reclaimed', Icons.inventory_rounded, LFColors.primary),
-                  Container(height: 24, width: 1, color: const Color(0xFFE2E8F0)),
-                  _miniStat('< 24h', 'Avg Return Time', Icons.bolt_rounded, Colors.orange),
+                  Expanded(child: _miniStat('88%', 'Recovery Rate', Icons.verified_rounded, const Color(0xFF10B981))),
+                  Container(height: 24, width: 1, color: LFColors.isDark(context) ? Colors.white24 : const Color(0xFFE2E8F0)),
+                  Expanded(child: _miniStat('240+', 'Items Reclaimed', Icons.inventory_rounded, LFColors.primary)),
+                  Container(height: 24, width: 1, color: LFColors.isDark(context) ? Colors.white24 : const Color(0xFFE2E8F0)),
+                  Expanded(child: _miniStat('< 24h', 'Avg Return Time', Icons.bolt_rounded, Colors.orange)),
                 ],
               ),
             ),
@@ -354,11 +381,11 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
             // SEARCH INPUT
             Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: LFColors.card(context),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.03),
+                    color: Colors.black.withValues(alpha: LFColors.isDark(context) ? 0.2 : 0.03),
                     blurRadius: 12,
                     offset: const Offset(0, 3),
                   ),
@@ -366,10 +393,11 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
               ),
               child: TextField(
                 controller: _searchController,
+                style: TextStyle(color: LFColors.text(context)),
                 onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
                   hintText: 'Search title, building, or item ID...',
-                  hintStyle: const TextStyle(color: LFColors.textMuted, fontSize: 14),
+                  hintStyle: TextStyle(color: LFColors.muted(context), fontSize: 14),
                   prefixIcon: const Icon(Icons.search_rounded, color: LFColors.primary),
                   suffixIcon: _searchController.text.isNotEmpty
                       ? IconButton(
@@ -377,11 +405,11 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
                             _searchController.clear();
                             setState(() {});
                           },
-                          icon: const Icon(Icons.close_rounded, color: LFColors.textMuted),
+                          icon: Icon(Icons.close_rounded, color: LFColors.muted(context)),
                         )
                       : null,
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: LFColors.card(context),
                   contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -415,12 +443,12 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'Recent Reports',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
-                    color: LFColors.textPrimary,
+                    color: LFColors.text(context),
                   ),
                 ),
                 Container(
@@ -526,6 +554,9 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
         const SizedBox(height: 2),
         Text(
           label,
+          textAlign: TextAlign.center,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: const TextStyle(
             fontSize: 10,
             color: LFColors.textMuted,
@@ -544,7 +575,7 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? LFColors.primary : Colors.white,
+          color: isSelected ? LFColors.primary : LFColors.card(context),
           borderRadius: BorderRadius.circular(20),
           boxShadow: isSelected
               ? [
@@ -556,7 +587,7 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
                 ]
               : [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.02),
+                    color: Colors.black.withValues(alpha: LFColors.isDark(context) ? 0.2 : 0.02),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   )
@@ -565,7 +596,7 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : LFColors.textSecondary,
+            color: isSelected ? Colors.white : LFColors.subtext(context),
             fontWeight: FontWeight.w700,
             fontSize: 13,
           ),
@@ -579,11 +610,11 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: LFColors.card(context),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withValues(alpha: LFColors.isDark(context) ? 0.2 : 0.03),
             blurRadius: 10,
           ),
         ],
@@ -605,10 +636,10 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
           const SizedBox(height: 14),
           Text(
             query.trim().isEmpty ? 'No reports available' : 'No items match your search',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w800,
-              color: LFColors.textPrimary,
+              color: LFColors.text(context),
             ),
           ),
           const SizedBox(height: 6),
@@ -617,8 +648,8 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
                 ? 'Be the first to post a lost or found item.'
                 : 'Try checking your spelling or search another location.',
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: LFColors.textSecondary,
+            style: TextStyle(
+              color: LFColors.subtext(context),
               fontSize: 13,
             ),
           ),
@@ -645,14 +676,17 @@ class LostItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final String status = item['status'] ?? 'Lost';
     final bool isResolved = status == 'Resolved';
+    final rawImage = (item['imageUrl'] != null && item['imageUrl'].toString().isNotEmpty)
+        ? item['imageUrl'].toString()
+        : (item['image'] != null && item['image'].toString().isNotEmpty ? item['image'].toString() : null);
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: LFColors.card(context),
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: Colors.black.withValues(alpha: LFColors.isDark(context) ? 0.2 : 0.04),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -668,19 +702,19 @@ class LostItemCard extends StatelessWidget {
             padding: const EdgeInsets.all(14),
             child: Row(
               children: [
-                // ICON CONTAINER
+                // ICON / PHOTO CONTAINER
                 Container(
                   height: 64,
                   width: 64,
                   decoration: BoxDecoration(
-                    color: item['color'] ?? const Color(0xFFF1F5F9),
+                    color: item['color'] ?? (LFColors.isDark(context) ? const Color(0xFF262626) : const Color(0xFFF1F5F9)),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: item['image'] != null
+                  child: rawImage != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(16),
                           child: _buildItemImage(
-                            item['image'] as String,
+                            rawImage,
                             fit: BoxFit.cover,
                           ),
                         )
@@ -707,7 +741,7 @@ class LostItemCard extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w800,
-                                color: isResolved ? LFColors.textMuted : LFColors.textPrimary,
+                                color: isResolved ? LFColors.muted(context) : LFColors.text(context),
                                 decoration: isResolved ? TextDecoration.lineThrough : null,
                               ),
                             ),
@@ -837,36 +871,22 @@ class ReportItemPage extends StatefulWidget {
 }
 
 class _ReportItemPageState extends State<ReportItemPage> {
-  final ImagePicker picker = ImagePicker();
   final TextEditingController nameController = TextEditingController();
   final TextEditingController locationController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
 
   XFile? selectedImage;
   bool isLost = true;
+  bool isSubmitting = false;
 
   Future<void> pickImage() async {
-    try {
-      final XFile? image = await picker.pickImage(
-        source: ImageSource.gallery,
-        imageQuality: 80,
-      );
-
-      if (image != null) {
-        setState(() => selectedImage = image);
-      }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Photo selector initialized.'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+    final XFile? image = await ImageUploadService.instance.pickImageWithSourceSelection(context);
+    if (image != null) {
+      setState(() => selectedImage = image);
     }
   }
 
-  void submitReport() {
+  Future<void> submitReport() async {
     if (nameController.text.trim().isEmpty || locationController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -877,6 +897,26 @@ class _ReportItemPageState extends State<ReportItemPage> {
         ),
       );
       return;
+    }
+
+    setState(() => isSubmitting = true);
+
+    String? uploadedImageUrl;
+    if (selectedImage != null) {
+      final uploadResult = await ImageUploadService.instance.uploadImage(selectedImage!);
+      if (uploadResult.success && uploadResult.url != null) {
+        uploadedImageUrl = uploadResult.url;
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(uploadResult.errorMessage ?? 'Image upload failed. Submitting item report without image.'),
+              backgroundColor: Colors.orangeAccent,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
     }
 
     final idNumber = (1000 + (DateTime.now().millisecondsSinceEpoch % 8999));
@@ -894,6 +934,17 @@ class _ReportItemPageState extends State<ReportItemPage> {
       category = 'Accessories';
     }
 
+    if (!mounted) return;
+    setState(() => isSubmitting = false);
+
+    // Trigger instant mobile push notification
+    NotificationService().showInstantNotification(
+      id: DateTime.now().millisecondsSinceEpoch % 100000,
+      title: isLost ? 'Lost Item Reported' : 'Found Item Reported',
+      body: 'Your listing for "${nameController.text.trim()}" is now published on the campus bulletin.',
+      type: 'lost_found',
+    );
+
     Navigator.pop(context, {
       'id': 'LF-$idNumber',
       'title': nameController.text.trim(),
@@ -901,14 +952,15 @@ class _ReportItemPageState extends State<ReportItemPage> {
       'location': locationController.text.trim(),
       'time': 'Just now',
       'status': isLost ? 'Lost' : 'Found',
-      'image': selectedImage?.path,
+      'imageUrl': uploadedImageUrl,
+      'image': uploadedImageUrl ?? selectedImage?.path,
       'icon': Icons.inventory_2_rounded,
       'color': isLost ? const Color(0xFFFFF1F2) : const Color(0xFFECFDF5),
       'iconColor': isLost ? LFColors.lostText : LFColors.foundText,
       'description': descriptionController.text.trim().isEmpty
           ? 'No additional description provided.'
           : descriptionController.text.trim(),
-      'reporter': 'You (Verified Student)',
+      'reporter': '${AuthService.currentUser?.name ?? "Campus Member"} (${AuthService.currentRole})',
       'isVerified': true,
     });
   }
@@ -1017,12 +1069,27 @@ class _ReportItemPageState extends State<ReportItemPage> {
                             Positioned(
                               right: 10,
                               top: 10,
-                              child: CircleAvatar(
-                                backgroundColor: Colors.black54,
-                                child: IconButton(
-                                  icon: const Icon(Icons.close_rounded, color: Colors.white, size: 18),
-                                  onPressed: () => setState(() => selectedImage = null),
-                                ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  CircleAvatar(
+                                    backgroundColor: Colors.black54,
+                                    child: IconButton(
+                                      icon: const Icon(Icons.refresh_rounded, color: Colors.white, size: 18),
+                                      tooltip: 'Retake Photo',
+                                      onPressed: pickImage,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  CircleAvatar(
+                                    backgroundColor: Colors.black54,
+                                    child: IconButton(
+                                      icon: const Icon(Icons.close_rounded, color: Colors.white, size: 18),
+                                      tooltip: 'Cancel Photo',
+                                      onPressed: () => setState(() => selectedImage = null),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
@@ -1063,20 +1130,27 @@ class _ReportItemPageState extends State<ReportItemPage> {
               width: double.infinity,
               height: 52,
               child: ElevatedButton(
-                onPressed: submitReport,
+                onPressed: isSubmitting ? null : submitReport,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: LFColors.primary,
                   foregroundColor: Colors.white,
+                  disabledBackgroundColor: LFColors.primary.withValues(alpha: 0.6),
                   elevation: 4,
                   shadowColor: LFColors.primary.withValues(alpha: 0.4),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                child: const Text(
-                  'PUBLISH REPORT',
-                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
-                ),
+                child: isSubmitting
+                    ? const SizedBox(
+                        height: 22,
+                        width: 22,
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                      )
+                    : const Text(
+                        'PUBLISH REPORT',
+                        style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+                      ),
               ),
             ),
           ],
@@ -1200,9 +1274,9 @@ class ItemDetailsPage extends StatelessWidget {
           left: 20,
           right: 20,
         ),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        decoration: BoxDecoration(
+          color: LFColors.card(context),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1219,34 +1293,36 @@ class ItemDetailsPage extends StatelessWidget {
                   child: const Icon(Icons.shield_outlined, color: LFColors.primary),
                 ),
                 const SizedBox(width: 12),
-                const Column(
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Verify Ownership Claim',
-                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: LFColors.text(context)),
                     ),
                     Text(
                       'Security Verification Step',
-                      style: TextStyle(fontSize: 12, color: LFColors.textMuted),
+                      style: TextStyle(fontSize: 12, color: LFColors.muted(context)),
                     ),
                   ],
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'To claim this item, please provide a unique detail or serial mark only the true owner would know:',
-              style: TextStyle(fontSize: 13, color: LFColors.textSecondary),
+              style: TextStyle(fontSize: 13, color: LFColors.subtext(context)),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: proofController,
               maxLines: 2,
+              style: TextStyle(color: LFColors.text(context)),
               decoration: InputDecoration(
                 hintText: 'e.g. Passcode pattern, engraving on back, case sticker color...',
+                hintStyle: TextStyle(color: LFColors.muted(context), fontSize: 13),
                 filled: true,
-                fillColor: LFColors.background,
+                fillColor: LFColors.bg(context),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                   borderSide: BorderSide.none,
@@ -1303,22 +1379,25 @@ class ItemDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool hasImage = item['image'] != null;
+    final rawImage = (item['imageUrl'] != null && item['imageUrl'].toString().isNotEmpty)
+        ? item['imageUrl'].toString()
+        : (item['image'] != null && item['image'].toString().isNotEmpty ? item['image'].toString() : null);
+    final bool hasImage = rawImage != null;
     final String status = item['status'] ?? 'Lost';
     final bool isLost = status == 'Lost';
     final bool isResolved = status == 'Resolved';
 
     return Scaffold(
-      backgroundColor: LFColors.background,
+      backgroundColor: LFColors.bg(context),
       appBar: AppBar(
         title: Text(
           'Report #${item['id'] ?? 'LF-101'}',
-          style: const TextStyle(fontWeight: FontWeight.w800, color: LFColors.textPrimary),
+          style: TextStyle(fontWeight: FontWeight.w800, color: LFColors.text(context)),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: LFColors.card(context),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: LFColors.textPrimary),
+          icon: Icon(Icons.arrow_back_rounded, color: LFColors.text(context)),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -1332,14 +1411,14 @@ class ItemDetailsPage extends StatelessWidget {
               height: 220,
               width: double.infinity,
               decoration: BoxDecoration(
-                color: item['color'] ?? const Color(0xFFF1F5F9),
+                color: item['color'] ?? (LFColors.isDark(context) ? const Color(0xFF262626) : const Color(0xFFF1F5F9)),
                 borderRadius: BorderRadius.circular(24),
               ),
               child: hasImage
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(24),
                       child: _buildItemImage(
-                        item['image'] as String,
+                        rawImage,
                         fit: BoxFit.cover,
                       ),
                     )
@@ -1361,10 +1440,10 @@ class ItemDetailsPage extends StatelessWidget {
                 Expanded(
                   child: Text(
                     item['title'],
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w800,
-                      color: LFColors.textPrimary,
+                      color: LFColors.text(context),
                     ),
                   ),
                 ),
@@ -1392,10 +1471,11 @@ class ItemDetailsPage extends StatelessWidget {
             const SizedBox(height: 16),
 
             // DETAILS LIST
-            _detailRow(Icons.location_on_outlined, 'Location', item['location']),
-            _detailRow(Icons.schedule_rounded, 'Reported Time', item['time']),
-            _detailRow(Icons.person_outline_rounded, 'Reported By', item['reporter'] ?? 'Campus Member'),
+            _detailRow(context, Icons.location_on_outlined, 'Location', item['location']),
+            _detailRow(context, Icons.schedule_rounded, 'Reported Time', item['time']),
+            _detailRow(context, Icons.person_outline_rounded, 'Reported By', item['reporter'] ?? 'Campus Member'),
             _detailRow(
+              context,
               Icons.notes_rounded,
               'Description',
               item['description'] ?? 'No additional description provided.',
@@ -1468,17 +1548,17 @@ class ItemDetailsPage extends StatelessWidget {
     );
   }
 
-  Widget _detailRow(IconData icon, String title, String value) {
+  Widget _detailRow(BuildContext context, IconData icon, String title, String value) {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: LFColors.card(context),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withValues(alpha: LFColors.isDark(context) ? 0.2 : 0.02),
             blurRadius: 8,
           ),
         ],
@@ -1501,19 +1581,19 @@ class ItemDetailsPage extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
-                    color: LFColors.textMuted,
+                    color: LFColors.muted(context),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 3),
                 Text(
                   value,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
-                    color: LFColors.textPrimary,
+                    color: LFColors.text(context),
                   ),
                 ),
               ],

@@ -34,15 +34,19 @@ class ClassModel {
       };
 
   factory ClassModel.fromMap(Map<dynamic, dynamic> map) => ClassModel(
-        id: map['id'] as String,
-        subject: map['subject'] as String,
-        dayOfWeek: map['dayOfWeek'] as int,
-        startTime: map['startTime'] as String,
-        endTime: map['endTime'] as String,
-        room: map['room'] as String,
-        teacher: (map['teacher'] ?? '') as String,
-        isWeekly: (map['isWeekly'] ?? true) as bool,
-        createdAt: DateTime.parse(map['createdAt'] as String),
+        id: (map['id'] ?? map['_id'] ?? '').toString(),
+        subject: (map['subject'] ?? map['title'] ?? 'Class').toString(),
+        dayOfWeek: map['dayOfWeek'] is int
+            ? (map['dayOfWeek'] as int)
+            : (int.tryParse(map['dayOfWeek']?.toString() ?? '1') ?? 1),
+        startTime: (map['startTime'] ?? '09:00 AM').toString(),
+        endTime: (map['endTime'] ?? '10:00 AM').toString(),
+        room: (map['room'] ?? map['location'] ?? '').toString(),
+        teacher: (map['teacher'] ?? map['instructor'] ?? '').toString(),
+        isWeekly: map['isWeekly'] == true || map['isWeekly'] == null,
+        createdAt: map['createdAt'] != null
+            ? (DateTime.tryParse(map['createdAt'].toString()) ?? DateTime.now())
+            : DateTime.now(),
       );
 
   /// Returns true if this class falls on the given [date].
@@ -50,16 +54,29 @@ class ClassModel {
     return isWeekly && date.weekday == dayOfWeek;
   }
 
-  /// Convert "HH:mm" string to a DateTime on [date].
-  DateTime startDateTimeOn(DateTime date) {
-    final parts = startTime.split(':');
-    return DateTime(date.year, date.month, date.day,
-        int.parse(parts[0]), int.parse(parts[1]));
+  /// Convert any time format ("09:00 AM", "2:30 PM", "14:30") to a DateTime on [date] safely.
+  static DateTime parseTimeOn(DateTime date, String timeStr) {
+    int hour = 9;
+    int minute = 0;
+    try {
+      final clean = timeStr.trim().toUpperCase();
+      final isPM = clean.contains('PM');
+      final isAM = clean.contains('AM');
+      final stripped = clean.replaceAll(RegExp(r'[^\d:]'), '');
+      final parts = stripped.split(':');
+      if (parts.isNotEmpty) {
+        hour = int.tryParse(parts[0]) ?? 9;
+      }
+      if (parts.length > 1) {
+        minute = int.tryParse(parts[1]) ?? 0;
+      }
+      if (isPM && hour < 12) hour += 12;
+      if (isAM && hour == 12) hour = 0;
+    } catch (_) {}
+    return DateTime(date.year, date.month, date.day, hour, minute);
   }
 
-  DateTime endDateTimeOn(DateTime date) {
-    final parts = endTime.split(':');
-    return DateTime(date.year, date.month, date.day,
-        int.parse(parts[0]), int.parse(parts[1]));
-  }
+  DateTime startDateTimeOn(DateTime date) => parseTimeOn(date, startTime);
+
+  DateTime endDateTimeOn(DateTime date) => parseTimeOn(date, endTime);
 }

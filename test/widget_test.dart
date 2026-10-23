@@ -1,14 +1,23 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hive/hive.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:campus_navigator/main.dart';
 import 'package:campus_navigator/screens/map_screen.dart';
 
 void main() {
+  setUpAll(() {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({});
+    final tempDir = Directory.systemTemp.createTempSync('hive_widget_test');
+    Hive.init(tempDir.path);
+  });
+
   testWidgets('CampusConnectApp smoke test', (WidgetTester tester) async {
     // Build CampusConnectApp and trigger a frame.
     await tester.pumpWidget(const CampusConnectApp());
-    await tester.pump(const Duration(seconds: 3));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 500));
     expect(find.byType(CampusConnectApp), findsOneWidget);
   });
 

@@ -185,6 +185,20 @@ class MapConfigService extends ChangeNotifier {
       minZoom: 12.0,
       maxNativeZoom: 18,
     ),
+    MapStyleOption(
+      id: 'carto_dark',
+      name: 'Dark Matter (Night Mode)',
+      subtitle: 'Sleek dark theme for night navigation • 100% CORS-safe',
+      provider: MapProvider.cartoDb,
+      urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+      subdomains: ['a', 'b', 'c', 'd'],
+      icon: Icons.dark_mode_rounded,
+      requiresApiKey: false,
+      isCorsSafe: true,
+      maxZoom: 20.5,
+      minZoom: 12.0,
+      maxNativeZoom: 19,
+    ),
   ];
 
   void setApiKey(String key) {

@@ -105,6 +105,15 @@ class _SignupScreenState extends State<SignupScreen> {
       if (!mounted) return;
 
       if (result.success) {
+        await AuthService.saveLoginPreferences(
+          identity: email,
+          role: _selectedRole,
+          rememberMe: true,
+        );
+        await AuthService.setOnboardingCompleted();
+
+        if (!mounted) return;
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(

@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../core/constants/app_colors.dart';
 import '../../models/event.dart';
-import '../../data/mock_data.dart';
 import 'event_registration_service.dart';
 import 'events_screen.dart' show eventCategoryColor, eventCategoryIcon;
+import '../../services/event_service.dart';
+import '../../services/auth_service.dart';
 
 class EventDetailPage extends StatefulWidget {
   final Event event;
@@ -19,15 +20,26 @@ class _EventDetailPageState extends State<EventDetailPage> {
   final EventRegistrationService _regService = EventRegistrationService();
   bool _isRegistering = false;
 
-  Event get event {
-    try {
-      return MockData.events.firstWhere((e) => e.id == widget.event.id);
-    } catch (_) {
-      return widget.event;
-    }
+  Event get event => widget.event;
+
+  bool get isOrganizer {
+    final user = AuthService.currentUser;
+    final currentUserId = user?.id ?? '';
+    final currentUserName = (user?.name ?? '').trim().toLowerCase();
+    final organizer = event.organizer.trim().toLowerCase();
+    final createdBy = (event.createdBy ?? '').trim();
+    final createdByName = (event.createdByName ?? '').trim().toLowerCase();
+
+    return AuthService.isFaculty &&
+        (createdBy == currentUserId ||
+         (currentUserName.isNotEmpty && organizer.contains(currentUserName)) ||
+         (currentUserName.isNotEmpty && createdByName.contains(currentUserName)) ||
+         createdBy == 'seed-faculty-001' ||
+         organizer.contains('faculty') ||
+         organizer.contains('coordinator'));
   }
 
-  bool get isRegistered => _regService.isRegistered(event.id);
+  bool get isRegistered => isOrganizer || _regService.isRegistered(event.id);
   bool get isInCalendar => _regService.isInCalendar(event.id);
 
   Future<void> _register() async {
@@ -38,6 +50,8 @@ class _EventDetailPageState extends State<EventDetailPage> {
     if (!mounted) return;
 
     if (confirm == true) {
+      // Connect to MongoDB Atlas backend endpoint
+      await EventService.instance.registerForEvent(event.id);
       await _regService.register(event);
       if (!mounted) return;
       setState(() => _isRegistering = false);
@@ -81,26 +95,27 @@ class _EventDetailPageState extends State<EventDetailPage> {
     return showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.card(context),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Confirm Registration', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17)),
+        title: Text('Confirm Registration', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: AppColors.text(context))),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("You're registering for:", style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+            Text("You're registering for:", style: TextStyle(color: AppColors.subtext(context), fontSize: 13)),
             const SizedBox(height: 10),
-            Text(event.title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: AppColors.textPrimary)),
+            Text(event.title, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: AppColors.text(context))),
             const SizedBox(height: 6),
             Row(children: [
-              const Icon(Icons.calendar_today_rounded, size: 14, color: AppColors.textSecondary),
+              Icon(Icons.calendar_today_rounded, size: 14, color: AppColors.subtext(context)),
               const SizedBox(width: 6),
-              Text(DateFormat('d MMM yyyy').format(event.date), style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+              Text(DateFormat('d MMM yyyy').format(event.date), style: TextStyle(fontSize: 13, color: AppColors.subtext(context))),
             ]),
             const SizedBox(height: 4),
             Row(children: [
-              const Icon(Icons.schedule_rounded, size: 14, color: AppColors.textSecondary),
+              Icon(Icons.schedule_rounded, size: 14, color: AppColors.subtext(context)),
               const SizedBox(width: 6),
-              Text(event.timeString, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+              Text(event.timeString, style: TextStyle(fontSize: 13, color: AppColors.subtext(context))),
             ]),
           ],
         ),
@@ -167,7 +182,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
     final canRegister = !event.isPast && !isRegistered && !isFull;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.bg(context),
       body: CustomScrollView(
         slivers: [
           // ── App bar + hero image ──────────────────────────────────────────
@@ -240,10 +255,40 @@ class _EventDetailPageState extends State<EventDetailPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Organizer Notice Banner
+                  if (isOrganizer) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(14),
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF7C3AED).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: const Color(0xFF7C3AED).withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.stars_rounded, color: Color(0xFF7C3AED)),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'You are the faculty host for this event. Your attendance and management privileges are active.',
+                              style: TextStyle(
+                                color: AppColors.isDark(context) ? const Color(0xFFC4B5FD) : const Color(0xFF6D28D9),
+                                fontWeight: FontWeight.w700,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+
                   // Title
                   Text(
                     event.title,
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.textPrimary),
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.text(context)),
                   ),
                   const SizedBox(height: 16),
 
@@ -268,15 +313,15 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   const SizedBox(height: 16),
 
                   // About
-                  const Text('About Event', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+                  Text('About Event', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.text(context))),
                   const SizedBox(height: 8),
-                  Text(event.description, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.6)),
+                  Text(event.description, style: TextStyle(fontSize: 14, color: AppColors.subtext(context), height: 1.6)),
                   const SizedBox(height: 20),
                   const Divider(),
                   const SizedBox(height: 16),
 
                   // Organizer
-                  const Text('Organized By', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+                  Text('Organized By', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.text(context))),
                   const SizedBox(height: 10),
                   Row(
                     children: [
@@ -292,7 +337,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                       Expanded(
                         child: Text(
                           event.organizer,
-                          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: AppColors.textPrimary),
+                          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: AppColors.text(context)),
                         ),
                       ),
                     ],
@@ -302,7 +347,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   const SizedBox(height: 16),
 
                   // Participants
-                  const Text('Participants', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+                  Text('Participants', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.text(context))),
                   const SizedBox(height: 10),
                   Row(
                     children: [
@@ -311,7 +356,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                       Expanded(
                         child: Text(
                           '${event.participantCount} students registered',
-                          style: const TextStyle(fontSize: 14, color: AppColors.textPrimary, fontWeight: FontWeight.w600),
+                          style: TextStyle(fontSize: 14, color: AppColors.text(context), fontWeight: FontWeight.w600),
                         ),
                       ),
                     ],
@@ -355,7 +400,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
       // ── Bottom action bar ─────────────────────────────────────────────────
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.card(context),
           boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 12, offset: const Offset(0, -4))],
         ),
         padding: EdgeInsets.fromLTRB(20, 12, 20, MediaQuery.of(context).padding.bottom + 12),
@@ -364,7 +409,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Add to Calendar button
-            if (isRegistered)
+            if (isRegistered && !isOrganizer)
               OutlinedButton.icon(
                 onPressed: isInCalendar ? null : _addToCalendar,
                 icon: Icon(
@@ -382,10 +427,31 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
               ),
-            if (isRegistered) const SizedBox(height: 10),
+            if (isRegistered && !isOrganizer) const SizedBox(height: 10),
 
-            // Main register / unregister button
-            if (event.isPast)
+            // Main register / unregister / organizer button
+            if (isOrganizer)
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF7C3AED).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFF7C3AED).withValues(alpha: 0.4)),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.verified_user_rounded, color: Color(0xFF7C3AED), size: 20),
+                    SizedBox(width: 8),
+                    Text(
+                      'EVENT ORGANIZER / FACULTY HOST',
+                      style: TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF7C3AED), fontSize: 13),
+                    ),
+                  ],
+                ),
+              )
+            else if (event.isPast)
               Container(
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 alignment: Alignment.center,
@@ -476,7 +542,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
         Expanded(
           child: Text(
             text,
-            style: const TextStyle(fontSize: 14, color: AppColors.textPrimary, fontWeight: FontWeight.w500),
+            style: TextStyle(fontSize: 14, color: AppColors.text(context), fontWeight: FontWeight.w500),
           ),
         ),
       ],
@@ -502,9 +568,9 @@ class _RegistrationSuccessSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: AppColors.card(context),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.fromLTRB(
         24, 20, 24, MediaQuery.of(context).padding.bottom + 32,
@@ -524,10 +590,10 @@ class _RegistrationSuccessSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             "You're Registered! 🎉",
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: AppColors.textPrimary),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: AppColors.text(context)),
           ),
           const SizedBox(height: 8),
           Text(
@@ -539,12 +605,12 @@ class _RegistrationSuccessSheet extends StatelessWidget {
           Text(
             '${DateFormat('d MMM yyyy').format(event.date)} • ${event.timeString}',
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+            style: TextStyle(fontSize: 13, color: AppColors.subtext(context)),
           ),
           Text(
             event.location,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+            style: TextStyle(fontSize: 13, color: AppColors.subtext(context)),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),

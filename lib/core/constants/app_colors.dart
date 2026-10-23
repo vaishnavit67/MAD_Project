@@ -19,4 +19,12 @@ class AppColors {
   static const Color featureIconBg4 = Color(0xFFFFF4E5); // Light Orange
   static const Color featureIconBg5 = Color(0xFFE5F2FC); // Light Blue
   static const Color featureIconBg6 = Color(0xFFF5E5FC); // Light Pink
+
+  // Dynamic Theme Helpers
+  static bool isDark(BuildContext context) => Theme.of(context).brightness == Brightness.dark;
+  static Color bg(BuildContext context) => isDark(context) ? const Color(0xFF121212) : background;
+  static Color card(BuildContext context) => isDark(context) ? const Color(0xFF1E1E1E) : white;
+  static Color text(BuildContext context) => isDark(context) ? Colors.white : textPrimary;
+  static Color subtext(BuildContext context) => isDark(context) ? const Color(0xFF94A3B8) : textSecondary;
+  static Color borderCol(BuildContext context) => isDark(context) ? const Color(0xFF2D3748) : border;
 }

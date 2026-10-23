@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:mongo_dart/mongo_dart.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
 import '../utils/validators.dart';
 
@@ -40,6 +41,13 @@ class MongoDbService {
     defaultValue: 'mongodb://127.0.0.1:27017/campus_connect',
   );
 
+  static const String primaryLaptopIp = '10.12.252.91';
+  static const List<String> candidateUrls = [
+    'http://10.12.252.91:5000', // Wi-Fi Laptop LAN IP
+    'http://127.0.0.1:5000',    // Physical device via adb reverse
+    'http://10.0.2.2:5000',     // Android emulator
+  ];
+
   /// Default Node.js Express backend URL
   static String get defaultBackendUrl {
     const envUrl = String.fromEnvironment('BACKEND_URL', defaultValue: '');
@@ -47,7 +55,7 @@ class MongoDbService {
 
     if (kIsWeb) return 'http://localhost:5000';
     if (defaultTargetPlatform == TargetPlatform.android) {
-      return 'http://10.0.2.2:5000';
+      return 'http://10.12.252.91:5000';
     }
     return 'http://127.0.0.1:5000';
   }
@@ -138,13 +146,40 @@ class MongoDbService {
     _connectionUri = uri.trim();
   }
 
-  /// Configure Node.js backend URL (e.g. 'http://10.0.2.2:5000' or deployed URL)
+  /// Configure Node.js backend URL (e.g. 'http://10.12.252.91:5000' or deployed URL)
   void configureBackend({required String url}) {
     _backendUrl = url.trim();
+    _saveBackendUrl(_backendUrl);
+    _lastBackendCheck = null;
   }
 
-  /// Connect to MongoDB with timeout guard
+  Future<void> _saveBackendUrl(String url) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('backend_server_url', url);
+    } catch (_) {}
+  }
+
+  /// Connect to MongoDB with timeout guard and load saved backend URL
   Future<bool> initialize({Duration timeout = const Duration(seconds: 3)}) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedUrl = prefs.getString('backend_server_url');
+      if (savedUrl != null && savedUrl.trim().isNotEmpty) {
+        if (savedUrl.contains('10.0.2.2')) {
+          _backendUrl = defaultBackendUrl;
+        } else {
+          _backendUrl = savedUrl.trim();
+        }
+        debugPrint('[MongoDbService] Restored saved backend URL: $_backendUrl');
+      }
+    } catch (_) {}
+
+    // Probe live endpoints to lock onto the active server immediately
+    try {
+      await probeAndSelectBackendUrl(force: true).timeout(const Duration(milliseconds: 1500));
+    } catch (_) {}
+
     if (kIsWeb) {
       debugPrint('[MongoDB] Running on Flutter Web: Using Node.js REST API backend ($backendUrl)');
       _isConnected = false;
@@ -268,6 +303,56 @@ class MongoDbService {
   bool _isBackendAvailable = false;
   DateTime? _lastBackendCheck;
 
+  /// Current backend connection availability status
+  bool get isBackendAvailable => _isBackendAvailable;
+
+  /// Test connectivity to a specific endpoint
+  Future<bool> testEndpoint(String url) async {
+    try {
+      final clean = url.trim().replaceAll(RegExp(r'/+$'), '');
+      final response = await http
+          .get(Uri.parse('$clean/api/health'))
+          .timeout(const Duration(milliseconds: 1000));
+      return response.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Explicitly probe all candidate backend URLs and lock onto the reachable one
+  Future<bool> probeAndSelectBackendUrl({bool force = false}) async {
+    if (!force && _isBackendAvailable && _lastBackendCheck != null) {
+      if (DateTime.now().difference(_lastBackendCheck!).inSeconds < 10) {
+        return true;
+      }
+    }
+
+    // 1. Try current configured URL first
+    if (await testEndpoint(_backendUrl)) {
+      _isBackendAvailable = true;
+      _lastBackendCheck = DateTime.now();
+      await _saveBackendUrl(_backendUrl);
+      return true;
+    }
+
+    // 2. Probe candidates (Wi-Fi, USB adb, Emulator)
+    for (final altUrl in candidateUrls) {
+      if (altUrl == _backendUrl) continue;
+      if (await testEndpoint(altUrl)) {
+        _backendUrl = altUrl;
+        _isBackendAvailable = true;
+        _lastBackendCheck = DateTime.now();
+        await _saveBackendUrl(altUrl);
+        debugPrint('[MongoDbService] Successfully locked onto backend: $altUrl');
+        return true;
+      }
+    }
+
+    _isBackendAvailable = false;
+    _lastBackendCheck = DateTime.now();
+    return false;
+  }
+
   /// Check if the Node.js Express backend is running and responding
   Future<bool> checkBackendAvailable() async {
     final now = DateTime.now();
@@ -275,42 +360,7 @@ class MongoDbService {
       return _isBackendAvailable;
     }
 
-    try {
-      final response = await http
-          .get(Uri.parse('$_backendUrl/api/health'))
-          .timeout(const Duration(milliseconds: 600));
-      if (response.statusCode == 200) {
-        _isBackendAvailable = true;
-        _lastBackendCheck = now;
-        return true;
-      }
-    } catch (_) {}
-
-    // Dynamic fallback for Android: check between 10.0.2.2 (emulator) and 127.0.0.1 (adb reverse on physical device)
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
-      final altUrl = _backendUrl.contains('10.0.2.2')
-          ? _backendUrl.replaceFirst('10.0.2.2', '127.0.0.1')
-          : (_backendUrl.contains('127.0.0.1')
-              ? _backendUrl.replaceFirst('127.0.0.1', '10.0.2.2')
-              : null);
-      if (altUrl != null) {
-        try {
-          final response = await http
-              .get(Uri.parse('$altUrl/api/health'))
-              .timeout(const Duration(milliseconds: 600));
-          if (response.statusCode == 200) {
-            _backendUrl = altUrl;
-            _isBackendAvailable = true;
-            _lastBackendCheck = now;
-            return true;
-          }
-        } catch (_) {}
-      }
-    }
-
-    _isBackendAvailable = false;
-    _lastBackendCheck = now;
-    return false;
+    return await probeAndSelectBackendUrl();
   }
 
   /// Register user into role-specific table ('faculty', 'students', 'visitors')
@@ -363,10 +413,15 @@ class MongoDbService {
 
         final data = jsonDecode(response.body) as Map<String, dynamic>;
         if (response.statusCode == 201 && data['success'] == true) {
-          final createdUser = data['user'] != null
+          UserModel? createdUser = data['user'] != null
               ? UserModel.fromMap(data['user'] as Map<String, dynamic>)
               : null;
           if (createdUser != null) {
+            if (createdUser.passwordHash.isEmpty) {
+              createdUser = createdUser.copyWith(
+                passwordHash: UserModel.hashPassword(password),
+              );
+            }
             _inMemoryTables[targetTable]?.add(createdUser);
           }
           return AuthResult(
@@ -543,7 +598,9 @@ class MongoDbService {
   /// Search for user by email or phone within a specific table
   Future<UserModel?> _findUserInTable(String tableName, String identity) async {
     final cleanIdentity = identity.trim().toLowerCase();
+    final rawIdentity = identity.trim();
     final digitsOnly = identity.replaceAll(RegExp(r'\D'), '');
+    final tenDigitPhone = digitsOnly.length >= 10 ? digitsOnly.substring(digitsOnly.length - 10) : digitsOnly;
 
     // Check live MongoDB if connected
     if (isConnected && _db != null) {
@@ -554,8 +611,11 @@ class MongoDbService {
         if (cleanIdentity.contains('@')) {
           doc = await col.findOne(where.eq('email', cleanIdentity));
         } else if (digitsOnly.length >= 10) {
-          doc = await col.findOne(where.eq('phone', digitsOnly));
+          doc = await col.findOne(where.eq('phone', tenDigitPhone));
         }
+        
+        // Check rollNumber / campus ID
+        doc ??= await col.findOne(where.match('rollNumber', '^${RegExp.escape(rawIdentity)}\$', caseInsensitive: true));
 
         if (doc != null) {
           return UserModel.fromMap(doc);
@@ -571,7 +631,10 @@ class MongoDbService {
       if (user.email.toLowerCase() == cleanIdentity) {
         return user;
       }
-      if (digitsOnly.length >= 10 && user.phone.replaceAll(RegExp(r'\D'), '') == digitsOnly) {
+      if (digitsOnly.length >= 10 && user.phone.replaceAll(RegExp(r'\D'), '') == tenDigitPhone) {
+        return user;
+      }
+      if (user.rollNumber.toLowerCase() == rawIdentity.toLowerCase()) {
         return user;
       }
     }

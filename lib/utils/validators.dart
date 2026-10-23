@@ -76,24 +76,31 @@ class FormValidators {
     return null;
   }
 
-  /// Validates login identity input (Email or Phone) based on the selected Role.
+  /// Validates login identity input (Email, Phone, or Roll Number) based on the selected Role.
   static String? validateLoginIdentityForRole(String? value, String role) {
     if (value == null || value.trim().isEmpty) {
-      return 'Please enter your email or 10-digit phone number';
+      return 'Please enter your email, phone, or roll number';
     }
 
     final trimmed = value.trim();
-    final digitsOnly = trimmed.replaceAll(RegExp(r'\D'), '');
-    final containsLettersOrAt = RegExp(r'[a-zA-Z@]').hasMatch(trimmed);
 
-    if (containsLettersOrAt) {
+    // 1. If contains @, treat as email and validate domain for role
+    if (trimmed.contains('@')) {
       return validateEmailForRole(trimmed, role);
-    } else {
-      if (digitsOnly.length != 10) {
-        return 'Phone number must be 10 digits or enter valid role email';
-      }
-      return validatePhone(digitsOnly);
     }
+
+    // 2. If digits only (or international phone format with +), validate phone
+    final digitsOnly = trimmed.replaceAll(RegExp(r'\D'), '');
+    if ((digitsOnly.length == 10 && digitsOnly == trimmed) || (trimmed.startsWith('+') && digitsOnly.length >= 10)) {
+      return validatePhone(digitsOnly.substring(digitsOnly.length - 10));
+    }
+
+    // 3. Otherwise treat as Roll Number / Campus ID
+    if (trimmed.length < 3) {
+      return 'Please enter a valid email, 10-digit phone, or roll number';
+    }
+
+    return null;
   }
 
   /// Legacy helper for login identity validation without role context

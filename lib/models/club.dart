@@ -5,6 +5,9 @@ class Club {
   final int membersCount;
   final String description;
   final String? imageUrl;
+  final String createdBy;
+  final String createdByName;
+  final String leadEmail;
 
   Club({
     required this.id,
@@ -13,5 +16,8 @@ class Club {
     required this.membersCount,
     required this.description,
     this.imageUrl,
+    this.createdBy = 'seed-faculty-001',
+    this.createdByName = 'Dr. Priya Sharma (Faculty Coordinator)',
+    this.leadEmail = 'faculty@cb.amrita.edu',
   });
 }

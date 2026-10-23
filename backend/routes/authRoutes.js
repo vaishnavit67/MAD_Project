@@ -108,15 +108,29 @@ router.post('/login', loginValidator, async (req, res) => {
   try {
     const { identity, password, role } = req.body;
     const cleanIdentity = identity.trim().toLowerCase();
+    const rawIdentity = identity.trim();
     const digitsOnly = identity.replace(/\D/g, '');
+    const tenDigitPhone = digitsOnly.length >= 10 ? digitsOnly.slice(-10) : digitsOnly;
     const cleanRole = role.trim();
 
     const TargetModel = getModelForRole(cleanRole);
 
-    // Build search query for email or 10-digit phone
-    const searchFilter = cleanIdentity.includes('@')
-      ? { email: cleanIdentity }
-      : { phone: digitsOnly };
+    // Build comprehensive search query for email, 10-digit phone, or rollNumber / Campus ID
+    let searchFilter;
+    if (cleanIdentity.includes('@')) {
+      searchFilter = { email: cleanIdentity };
+    } else if (digitsOnly.length === 10 || (digitsOnly.length > 10 && rawIdentity.startsWith('+'))) {
+      searchFilter = { phone: tenDigitPhone };
+    } else {
+      const escapedRaw = rawIdentity.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      searchFilter = {
+        $or: [
+          { rollNumber: new RegExp(`^${escapedRaw}$`, 'i') },
+          { email: cleanIdentity },
+          { phone: tenDigitPhone || digitsOnly },
+        ],
+      };
+    }
 
     // 1. Search in target role table first
     let user = await TargetModel.findOne(searchFilter);
@@ -165,6 +179,7 @@ router.post('/login', loginValidator, async (req, res) => {
       {
         id: user._id,
         email: user.email,
+        name: user.name,
         role: user.role,
       },
       JWT_SECRET,

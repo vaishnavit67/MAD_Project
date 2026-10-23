@@ -8,6 +8,7 @@ class FeatureCard extends StatelessWidget {
   final IconData icon;
   final Color iconBgColor;
   final VoidCallback onTap;
+  final bool isFullWidth;
 
   const FeatureCard({
     super.key,
@@ -16,6 +17,7 @@ class FeatureCard extends StatelessWidget {
     required this.icon,
     required this.iconBgColor,
     required this.onTap,
+    this.isFullWidth = false,
   });
 
   @override
@@ -24,55 +26,62 @@ class FeatureCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.white,
+          color: AppColors.card(context),
           borderRadius: BorderRadius.circular(AppConstants.cardRadius),
           boxShadow: [
             BoxShadow(
-              color: AppColors.textSecondary.withValues(alpha: 0.05),
+              color: Colors.black.withValues(alpha: AppColors.isDark(context) ? 0.25 : 0.04),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
           ],
-          border: Border.all(color: AppColors.border, width: 0.5),
+          border: Border.all(color: AppColors.borderCol(context), width: 0.8),
         ),
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: iconBgColor,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(icon, color: AppColors.primary, size: 24),
             ),
-            const SizedBox(height: 8),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
                   Text(
                     title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                      color: AppColors.textPrimary,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 13.5,
+                      color: AppColors.text(context),
+                      letterSpacing: -0.2,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    softWrap: true,
                   ),
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
-                      color: AppColors.textSecondary,
+                      color: AppColors.subtext(context),
+                      height: 1.2,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    softWrap: true,
                   ),
                 ],
+              ),
+            ),
+            if (isFullWidth)
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 14,
+                color: AppColors.subtext(context),
               ),
           ],
         ),
@@ -80,3 +89,4 @@ class FeatureCard extends StatelessWidget {
     );
   }
 }
+

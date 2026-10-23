@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import '../models/notification_model.dart';
+import 'in_app_notification_service.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -89,6 +91,59 @@ class NotificationService {
       );
     } catch (e) {
       debugPrint('[NotificationService] scheduleNotification error: $e');
+    }
+  }
+
+  Future<void> showInstantNotification({
+    required int id,
+    required String title,
+    required String body,
+    String type = 'announcement',
+    String? payload,
+  }) async {
+    // 1. Add to In-App Notification Feed
+    try {
+      await InAppNotificationService().addNotification(
+        NotificationModel(
+          id: 'push_${DateTime.now().millisecondsSinceEpoch}_$id',
+          title: title,
+          message: body,
+          timestamp: DateTime.now(),
+          type: type,
+          isRead: false,
+        ),
+      );
+    } catch (e) {
+      debugPrint('[NotificationService] InApp inbox error: $e');
+    }
+
+    // 2. Dispatch Native Device Push/Local Notification
+    if (kIsWeb) return;
+    try {
+      const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+        'campus_connect_channel',
+        'Campus Connect Notifications',
+        channelDescription: 'Instant alerts for clubs, events, and lost items',
+        importance: Importance.max,
+        priority: Priority.high,
+        showWhen: true,
+      );
+      const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      );
+      const NotificationDetails details = NotificationDetails(android: androidDetails, iOS: iosDetails);
+
+      await flutterLocalNotificationsPlugin.show(
+        id,
+        title,
+        body,
+        details,
+        payload: payload,
+      );
+    } catch (e) {
+      debugPrint('[NotificationService] showInstantNotification error: $e');
     }
   }
 

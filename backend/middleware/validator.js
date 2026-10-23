@@ -91,21 +91,25 @@ function validatePassword(password) {
 
 function validateLoginIdentityForRole(identity, role) {
   if (!identity || !identity.trim()) {
-    return 'Please enter your email or 10-digit phone number';
+    return 'Please enter your email, 10-digit phone number, or roll number';
   }
 
   const clean = identity.trim();
   const digits = clean.replace(/\D/g, '');
-  const hasLettersOrAt = /[a-zA-Z@]/.test(clean);
 
-  if (hasLettersOrAt) {
+  if (clean.includes('@')) {
     return validateEmailForRole(clean, role);
-  } else {
-    if (digits.length !== 10) {
-      return 'Phone number must be 10 digits or enter valid role email';
-    }
-    return validatePhone(digits);
   }
+
+  if (digits.length >= 10 && (digits === clean || clean.startsWith('+'))) {
+    return validatePhone(digits.slice(-10));
+  }
+
+  if (clean.length < 3) {
+    return 'Please enter a valid email, 10-digit phone, or roll number';
+  }
+
+  return null;
 }
 
 function signupValidator(req, res, next) {

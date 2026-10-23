@@ -108,6 +108,16 @@ async function runTests() {
     });
   });
 
+  // Wait for MongoDB Atlas connection to be ready
+  if (mongoose.connection.readyState !== 1) {
+    console.log('Waiting for MongoDB Atlas connection to be ready...');
+    await new Promise((resolve) => {
+      if (mongoose.connection.readyState === 1) return resolve();
+      mongoose.connection.once('connected', resolve);
+      mongoose.connection.once('open', resolve);
+    });
+  }
+
   try {
     // ----------------------------------------------------
     // TEST 1: Health Endpoint

@@ -59,17 +59,27 @@ class TaskModel {
 
   factory TaskModel.fromMap(Map<dynamic, dynamic> map) {
     return TaskModel(
-      id: map['id'] as String,
-      title: map['title'] as String,
-      description: map['description'] as String,
-      dueDateTime: DateTime.parse(map['dueDateTime'] as String),
-      priority: map['priority'] as String,
-      category: map['category'] as String,
-      completed: map['completed'] as bool,
-      reminderMinutes: map['reminderMinutes'] as int,
-      createdAt: DateTime.parse(map['createdAt'] as String),
-      updatedAt: DateTime.parse(map['updatedAt'] as String),
-      notificationId: map['notificationId'] as int,
+      id: (map['id'] ?? map['_id'] ?? '').toString(),
+      title: (map['title'] ?? 'Campus Task').toString(),
+      description: (map['description'] ?? '').toString(),
+      dueDateTime: map['dueDateTime'] != null
+          ? (DateTime.tryParse(map['dueDateTime'].toString()) ?? DateTime.now())
+          : DateTime.now(),
+      priority: (map['priority'] ?? 'Medium').toString(),
+      category: (map['category'] ?? 'General').toString(),
+      completed: map['completed'] == true,
+      reminderMinutes: map['reminderMinutes'] is int
+          ? (map['reminderMinutes'] as int)
+          : (int.tryParse(map['reminderMinutes']?.toString() ?? '15') ?? 15),
+      createdAt: map['createdAt'] != null
+          ? (DateTime.tryParse(map['createdAt'].toString()) ?? DateTime.now())
+          : DateTime.now(),
+      updatedAt: map['updatedAt'] != null
+          ? (DateTime.tryParse(map['updatedAt'].toString()) ?? DateTime.now())
+          : DateTime.now(),
+      notificationId: map['notificationId'] is int
+          ? (map['notificationId'] as int)
+          : (int.tryParse(map['notificationId']?.toString() ?? '0') ?? 0),
     );
   }
 }
